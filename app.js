@@ -46,6 +46,7 @@ let geocodeFacilityInBackground;
 let normalizeEntry;
 let migrateSeiriScore;
 let migrateLegacyLogs;
+let getLogsByFacilityId;
 
 let escapeHtml;
 let formatVisitDateTime;
@@ -61,14 +62,16 @@ let sortLogs;
 /** 訪問日・時刻の初期値を「今」にする */
 function setDefaultVisitDateTime() {
   if (!visitDateInput || !visitTimeInput) return;
+  // すでに値が入っている場合は上書きしない（ユーザーが入力した日付を保持する）
+  if (visitDateInput.value && visitTimeInput.value) return;
   const now = new Date();
   const y = now.getFullYear();
   const m = String(now.getMonth() + 1).padStart(2, "0");
   const d = String(now.getDate()).padStart(2, "0");
   const h = String(now.getHours()).padStart(2, "0");
   const min = String(now.getMinutes()).padStart(2, "0");
-  visitDateInput.value = `${y}-${m}-${d}`;
-  visitTimeInput.value = `${h}:${min}`;
+  if (!visitDateInput.value) visitDateInput.value = `${y}-${m}-${d}`;
+  if (!visitTimeInput.value) visitTimeInput.value = `${h}:${min}`;
 }
 
 function setDefaultRatingValues() {
@@ -115,6 +118,47 @@ function updateAddressHint() {
     facilityStatus.className = "hint hint-warn";
     addressHint.textContent = "初めての施設のため、住所の入力が必須です。";
   }
+}
+
+/** 施設の直前訪問データをフォームの初期値として設定 */
+function prefillFromLastVisit(facilityName) {
+  if (!facilityName) return;
+  if (editIdInput && editIdInput.value) return;
+
+  const facility = findFacilityByName(facilityName);
+  if (!facility) return;
+
+  const logs = getLogsByFacilityId(facility.id);
+  if (!logs.length) return;
+
+  const last = normalizeEntry(logs[0]);
+
+  document.getElementById("stay-hours").value = last.stayHours;
+  document.getElementById("stay-minutes").value = last.stayMinutes;
+  document.getElementById("sauna-temp").value = last.saunaTemp;
+  document.getElementById("water-temp").value = last.waterTemp;
+  document.getElementById("lourou").value = last.lourou || "なし";
+  document.getElementById("seiri").value = last.seiri;
+
+  const sets = last.sets;
+  document.getElementById("sauna-set-minutes").value = sets.sauna.minutesPerRound;
+  document.getElementById("sauna-set-count").value = sets.sauna.count;
+  document.getElementById("water-set-minutes").value = sets.water.minutesPerRound;
+  document.getElementById("water-set-count").value = sets.water.count;
+  document.getElementById("outdoor-set-minutes").value = sets.outdoor.minutesPerRound;
+  document.getElementById("outdoor-set-count").value = sets.outdoor.count;
+
+  const r = last.facilityRating;
+  setRadio("rateSauna", r.sauna);
+  setRadio("rateWater", r.water);
+  setRadio("rateOutdoor", r.outdoor);
+  setRadio("rateClean", r.cleanliness);
+  setRadio("rateFlow", r.flow);
+}
+
+function handleFacilityInput() {
+  updateAddressHint();
+  prefillFromLastVisit(facilityInput.value.trim());
 }
 
 function showSaveMessage(text, isError = false) {
@@ -189,6 +233,7 @@ function buildEntryFromForm(formData, existingEntry = null) {
     stayMinutes: getNumber(formData, "stayMinutes", 0),
     saunaTemp: getNumber(formData, "saunaTemp"),
     waterTemp: getNumber(formData, "waterTemp"),
+    lourou: formData.get("lourou") || "なし",
     seiri: migrateSeiriScore(getNumber(formData, "seiri")),
     sets: {
       sauna: {
@@ -228,8 +273,6 @@ function validateForm() {
   if (!visitDateInput.value) missing.push("訪問日");
   if (!visitTimeInput.value) missing.push("訪問時刻");
 
-  const commentEl = document.getElementById("comment");
-  if (!commentEl.value.trim()) missing.push("感想");
 
   RATING_NAMES.forEach((name) => {
     if (!form.querySelector(`input[name="${name}"]:checked`)) {
@@ -278,6 +321,7 @@ function createLogItemElement(rawEntry) {
       <span class="meta-chip">滞在 ${escapeHtml(formatStayDuration(entry.stayHours, entry.stayMinutes))}</span>
       <span class="meta-chip">サウナ ${escapeHtml(String(entry.saunaTemp))}℃</span>
       <span class="meta-chip">水風呂 ${escapeHtml(String(entry.waterTemp))}℃</span>
+      ${entry.lourou && entry.lourou !== "なし" ? `<span class="meta-chip">ロウリュ ${escapeHtml(entry.lourou)}</span>` : ""}
       <span class="meta-chip seiri-score">整い ${escapeHtml(formatSeiriScore(entry.seiri))}</span>
     </div>
     <details class="log-details">
@@ -326,6 +370,7 @@ function fillFormFromEntry(entry) {
   document.getElementById("stay-minutes").value = normalized.stayMinutes;
   document.getElementById("sauna-temp").value = normalized.saunaTemp;
   document.getElementById("water-temp").value = normalized.waterTemp;
+  document.getElementById("lourou").value = normalized.lourou || "なし";
   document.getElementById("seiri").value = normalized.seiri;
 
   const sets = normalized.sets;
@@ -493,6 +538,7 @@ function initApp() {
     normalizeEntry,
     migrateSeiriScore,
     migrateLegacyLogs,
+    getLogsByFacilityId,
   } = window.SaunaStorage);
 
   ({
@@ -550,8 +596,8 @@ function initApp() {
   if (exportBtn) exportBtn.addEventListener("click", handleExport);
   if (importBtn) importBtn.addEventListener("click", () => importFileInput.click());
   if (importFileInput) importFileInput.addEventListener("change", (e) => handleImportFile(e.target.files[0]));
-  facilityInput.addEventListener("input", updateAddressHint);
-  facilityInput.addEventListener("change", updateAddressHint);
+  facilityInput.addEventListener("input", handleFacilityInput);
+  facilityInput.addEventListener("change", handleFacilityInput);
   searchInput.addEventListener("input", renderLogs);
   sortBySelect.addEventListener("change", renderLogs);
   sortOrderSelect.addEventListener("change", renderLogs);

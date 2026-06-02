@@ -17,6 +17,7 @@
         <a href="index.html" class="nav-link active" aria-current="page">記録</a>
         <a href="graph.html" class="nav-link">訪問グラフ</a>
         <a href="map.html" class="nav-link">地図</a>
+        <a href="calendar.html" class="nav-link">カレンダー</a>
       </nav>
 
       <div class="stats-bar" aria-live="polite">
@@ -87,6 +88,16 @@
               <label for="water-temp">水風呂温度（℃）</label>
               <input type="number" id="water-temp" name="waterTemp" min="0" max="30" value="16" required>
             </div>
+          </div>
+
+          <div class="form-group">
+            <label for="lourou">ロウリュ</label>
+            <select id="lourou" name="lourou">
+              <option value="なし">なし</option>
+              <option value="セルフ">セルフ</option>
+              <option value="オート">オート</option>
+              <option value="アウフグース">アウフグース</option>
+            </select>
           </div>
 
           <!-- 整い度：100点満点 -->
@@ -202,7 +213,7 @@
 
         <div class="form-group">
           <label for="comment">感想</label>
-          <textarea id="comment" name="comment" rows="4" placeholder="今日のサウナの感想を書いてみよう" required></textarea>
+          <textarea id="comment" name="comment" rows="4" placeholder="今日のサウナの感想を書いてみよう（任意）"></textarea>
         </div>
 
         <div class="form-actions">

@@ -273,6 +273,7 @@ function normalizeEntry(entry) {
       cleanliness: 0,
       flow: 0,
     },
+    lourou: entry.lourou || "なし",
     comment: entry.comment || "",
     createdAt: entry.createdAt,
     updatedAt: entry.updatedAt || entry.createdAt,

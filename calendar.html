@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>カレンダー - サウナログ</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>📅 カレンダー</h1>
+      <p class="subtitle">訪問日をカレンダーで確認</p>
+
+      <nav class="page-nav" aria-label="メインメニュー">
+        <a href="index.html" class="nav-link">記録</a>
+        <a href="graph.html" class="nav-link">訪問グラフ</a>
+        <a href="map.html" class="nav-link">地図</a>
+        <a href="calendar.html" class="nav-link active" aria-current="page">カレンダー</a>
+      </nav>
+    </header>
+
+    <!-- 月ナビゲーション＋カレンダー本体 -->
+    <section class="calendar-section">
+
+      <!-- 前月・年月表示・次月 ボタン -->
+      <div class="calendar-nav">
+        <button type="button" class="btn-secondary btn-small" id="prev-month-btn">&#8592; 前月</button>
+        <h2 id="calendar-title" class="calendar-title">読み込み中...</h2>
+        <button type="button" class="btn-secondary btn-small" id="next-month-btn">次月 &#8594;</button>
+      </div>
+
+      <!--
+        カレンダーグリッド（7列）
+        曜日ヘッダー行は HTML に直書き、日付セルは JavaScript で追加する
+      -->
+      <div class="calendar-grid" id="calendar-grid" role="grid" aria-label="カレンダー">
+        <!-- 曜日ヘッダー行 -->
+        <div class="cal-header cal-sun" role="columnheader">日</div>
+        <div class="cal-header" role="columnheader">月</div>
+        <div class="cal-header" role="columnheader">火</div>
+        <div class="cal-header" role="columnheader">水</div>
+        <div class="cal-header" role="columnheader">木</div>
+        <div class="cal-header" role="columnheader">金</div>
+        <div class="cal-header cal-sat" role="columnheader">土</div>
+        <!-- 日付セルは calendar.js が生成して追加する -->
+      </div>
+
+      <!-- 記録がない月に表示するメッセージ -->
+      <p id="calendar-empty" class="empty-message hidden">
+        この月の記録はありません。
+        <a href="index.html">記録ページ</a>から追加してください。
+      </p>
+    </section>
+
+    <!-- 日付をクリックしたときに表示する、その日の記録一覧 -->
+    <section class="log-section hidden" id="day-records-section">
+      <h2 id="day-records-title">選択した日の記録</h2>
+      <ul id="day-records-list" class="log-list"></ul>
+    </section>
+  </div>
+
+  <!-- 共通モジュールを読み込む（storage → utils → calendar の順に依存） -->
+  <script src="js/storage.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/calendar.js"></script>
+</body>
+</html>

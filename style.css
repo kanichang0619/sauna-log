@@ -808,6 +808,139 @@ select {
   color: #90cdf4;
 }
 
+/* ============================================
+   カレンダーページ
+   ============================================ */
+
+/* カレンダー全体を包むカード */
+.calendar-section {
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* 前月・年月・次月 の横並びナビゲーション */
+.calendar-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+/* 年月タイトル（例: 2024年6月） */
+.calendar-title {
+  font-size: 1.1rem;
+  color: #e2e8f0;
+  text-align: center;
+  flex: 1;
+  margin: 0;
+}
+
+/* カレンダー本体：7列のグリッド */
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+}
+
+/* 曜日ヘッダー行（日〜土） */
+.cal-header {
+  text-align: center;
+  font-size: 0.78rem;
+  color: #a0aec0;
+  padding: 0.4rem 0;
+  font-weight: bold;
+}
+
+/* 日曜の文字色（ヘッダー・セル共通） */
+.cal-header.cal-sun { color: #fc8181; }
+/* 土曜の文字色 */
+.cal-header.cal-sat { color: #90cdf4; }
+
+/* 日付セル（デフォルト） */
+.cal-day {
+  position: relative;
+  min-height: 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-size: 0.88rem;
+  color: #cbd5e0;
+  background: rgba(255, 255, 255, 0.03);
+  cursor: default;
+  padding: 4px 2px;
+  gap: 2px;
+}
+
+/* 月初の空白セル（色なし） */
+.cal-day-blank {
+  background: transparent;
+}
+
+/* 日曜セル（サウナ未訪問の日） */
+.cal-day.cal-sun:not(.cal-day-visited) { color: #fc8181; }
+/* 土曜セル（サウナ未訪問の日） */
+.cal-day.cal-sat:not(.cal-day-visited) { color: #90cdf4; }
+
+/* サウナに行った日：オレンジ強調 */
+.cal-day-visited {
+  background: rgba(237, 137, 54, 0.22);
+  border: 1px solid rgba(237, 137, 54, 0.55);
+  color: #f6ad55;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.cal-day-visited:hover,
+.cal-day-visited:focus {
+  background: rgba(237, 137, 54, 0.38);
+  outline: none;
+}
+
+/* 今日の日付：水色の枠線で強調 */
+.cal-day-today {
+  outline: 2px solid #90cdf4;
+  outline-offset: -2px;
+}
+
+/* 日付の数字 */
+.cal-day-num {
+  line-height: 1;
+}
+
+/* 訪問件数バッジ（2件以上のとき表示） */
+.cal-visit-badge {
+  font-size: 0.62rem;
+  background: #ed8936;
+  color: #1a1a2e;
+  border-radius: 99px;
+  padding: 0 4px;
+  min-width: 16px;
+  height: 15px;
+  line-height: 15px;
+  text-align: center;
+  font-weight: bold;
+}
+
+/* スマホ：セルを少し小さくしてすべて収まるようにする */
+@media (max-width: 400px) {
+  .cal-day {
+    min-height: 38px;
+    font-size: 0.8rem;
+  }
+  .cal-visit-badge {
+    font-size: 0.55rem;
+    min-width: 14px;
+    height: 13px;
+    line-height: 13px;
+  }
+}
+
 @media (max-width: 480px) {
   .toolbar-row {
     grid-template-columns: 1fr;

@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>サウナログ</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🧖 サウナログ</h1>
+      <p class="subtitle">サウナ体験を記録しよう</p>
+
+      <!-- ページ間のナビゲーション -->
+      <nav class="page-nav" aria-label="メインメニュー">
+        <a href="index.html" class="nav-link active" aria-current="page">記録</a>
+        <a href="graph.html" class="nav-link">訪問グラフ</a>
+        <a href="map.html" class="nav-link">地図</a>
+      </nav>
+
+      <div class="stats-bar" aria-live="polite">
+        <span class="stats-label">合計訪問回数</span>
+        <span id="total-visits" class="stats-value">0</span>
+        <span class="stats-unit">回</span>
+      </div>
+      <!-- アプリの準備状態（main.js が更新） -->
+      <p id="boot-status" class="boot-status">読み込み中...</p>
+    </header>
+
+    <section class="form-section" id="form-section">
+      <h2 id="form-title">新しい記録を追加</h2>
+      <!-- novalidate: ブラウザ標準のチェックで勝手にスクロールするのを防ぐ -->
+      <form id="sauna-form" novalidate>
+        <!-- 編集モードのときだけ値が入る（新規のときは空） -->
+        <input type="hidden" id="edit-id" name="editId" value="">
+
+        <fieldset class="fieldset">
+          <legend>基本情報</legend>
+
+          <div class="form-group">
+            <label for="facility">施設名</label>
+            <input type="text" id="facility" name="facility" list="facility-suggestions" placeholder="例：○○サウナ" required autocomplete="off">
+            <!-- 登録済み施設名の候補（JavaScript が datalist を更新） -->
+            <datalist id="facility-suggestions"></datalist>
+            <p class="hint" id="facility-status"></p>
+          </div>
+
+          <!-- 初回訪問時のみ必須（2回目以降は空欄でOK） -->
+          <div class="form-group" id="address-group">
+            <label for="facility-address">施設の所在地（住所）</label>
+            <input type="text" id="facility-address" name="facilityAddress" placeholder="例：東京都渋谷区○○ 1-2-3">
+            <p class="hint" id="address-hint">初めて訪問する施設は住所の入力が必須です。2回目以降は空欄で構いません。</p>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="visit-date">訪問日</label>
+              <input type="date" id="visit-date" name="visitDate" required>
+            </div>
+            <div class="form-group">
+              <label for="visit-time">訪問時刻</label>
+              <input type="time" id="visit-time" name="visitTime" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <span class="label-text">滞在時間</span>
+            <div class="inline-inputs">
+              <div class="inline-field">
+                <input type="number" id="stay-hours" name="stayHours" min="0" max="24" value="1" required>
+                <span class="unit">時間</span>
+              </div>
+              <div class="inline-field">
+                <input type="number" id="stay-minutes" name="stayMinutes" min="0" max="59" value="0" required>
+                <span class="unit">分</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="sauna-temp">サウナ温度（℃）</label>
+              <input type="number" id="sauna-temp" name="saunaTemp" min="0" max="150" value="90" required>
+            </div>
+            <div class="form-group">
+              <label for="water-temp">水風呂温度（℃）</label>
+              <input type="number" id="water-temp" name="waterTemp" min="0" max="30" value="16" required>
+            </div>
+          </div>
+
+          <!-- 整い度：100点満点 -->
+          <div class="form-group">
+            <label for="seiri">整い度（100点満点）</label>
+            <input type="number" id="seiri" name="seiri" min="0" max="100" value="80" required>
+            <p class="hint">0〜100の整数で入力（100が最高）</p>
+          </div>
+        </fieldset>
+
+        <fieldset class="fieldset">
+          <legend>セット記録</legend>
+          <p class="fieldset-desc">各項目の「1回あたりの時間」と「回数」</p>
+
+          <div class="set-block">
+            <h3 class="set-title">🔥 サウナ</h3>
+            <div class="set-inputs">
+              <div class="form-group">
+                <label for="sauna-set-minutes">1回の時間（分）</label>
+                <input type="number" id="sauna-set-minutes" name="saunaSetMinutes" min="1" max="60" value="12" required>
+              </div>
+              <div class="form-group">
+                <label for="sauna-set-count">回数</label>
+                <input type="number" id="sauna-set-count" name="saunaSetCount" min="0" max="20" value="3" required>
+              </div>
+            </div>
+          </div>
+
+          <div class="set-block">
+            <h3 class="set-title">💧 水風呂</h3>
+            <div class="set-inputs">
+              <div class="form-group">
+                <label for="water-set-minutes">1回の時間（分）</label>
+                <input type="number" id="water-set-minutes" name="waterSetMinutes" min="1" max="30" value="1" required>
+              </div>
+              <div class="form-group">
+                <label for="water-set-count">回数</label>
+                <input type="number" id="water-set-count" name="waterSetCount" min="0" max="20" value="3" required>
+              </div>
+            </div>
+          </div>
+
+          <div class="set-block">
+            <h3 class="set-title">🌬️ 外気浴</h3>
+            <div class="set-inputs">
+              <div class="form-group">
+                <label for="outdoor-set-minutes">1回の時間（分）</label>
+                <input type="number" id="outdoor-set-minutes" name="outdoorSetMinutes" min="1" max="60" value="10" required>
+              </div>
+              <div class="form-group">
+                <label for="outdoor-set-count">回数</label>
+                <input type="number" id="outdoor-set-count" name="outdoorSetCount" min="0" max="20" value="3" required>
+              </div>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="fieldset">
+          <legend>施設の評価（1〜5）</legend>
+          <p class="fieldset-desc">5が最高評価です</p>
+
+          <div class="form-group">
+            <span class="label-text">サウナ</span>
+            <div class="rating-group">
+              <label class="rating-label"><input type="radio" name="rateSauna" value="1"> 1</label>
+              <label class="rating-label"><input type="radio" name="rateSauna" value="2"> 2</label>
+              <label class="rating-label"><input type="radio" name="rateSauna" value="3" checked> 3</label>
+              <label class="rating-label"><input type="radio" name="rateSauna" value="4"> 4</label>
+              <label class="rating-label"><input type="radio" name="rateSauna" value="5"> 5</label>
+            </div>
+          </div>
+          <div class="form-group">
+            <span class="label-text">水風呂</span>
+            <div class="rating-group">
+              <label class="rating-label"><input type="radio" name="rateWater" value="1"> 1</label>
+              <label class="rating-label"><input type="radio" name="rateWater" value="2"> 2</label>
+              <label class="rating-label"><input type="radio" name="rateWater" value="3" checked> 3</label>
+              <label class="rating-label"><input type="radio" name="rateWater" value="4"> 4</label>
+              <label class="rating-label"><input type="radio" name="rateWater" value="5"> 5</label>
+            </div>
+          </div>
+          <div class="form-group">
+            <span class="label-text">外気浴</span>
+            <div class="rating-group">
+              <label class="rating-label"><input type="radio" name="rateOutdoor" value="1"> 1</label>
+              <label class="rating-label"><input type="radio" name="rateOutdoor" value="2"> 2</label>
+              <label class="rating-label"><input type="radio" name="rateOutdoor" value="3" checked> 3</label>
+              <label class="rating-label"><input type="radio" name="rateOutdoor" value="4"> 4</label>
+              <label class="rating-label"><input type="radio" name="rateOutdoor" value="5"> 5</label>
+            </div>
+          </div>
+          <div class="form-group">
+            <span class="label-text">清潔感</span>
+            <div class="rating-group">
+              <label class="rating-label"><input type="radio" name="rateClean" value="1"> 1</label>
+              <label class="rating-label"><input type="radio" name="rateClean" value="2"> 2</label>
+              <label class="rating-label"><input type="radio" name="rateClean" value="3" checked> 3</label>
+              <label class="rating-label"><input type="radio" name="rateClean" value="4"> 4</label>
+              <label class="rating-label"><input type="radio" name="rateClean" value="5"> 5</label>
+            </div>
+          </div>
+          <div class="form-group">
+            <span class="label-text">動線</span>
+            <div class="rating-group">
+              <label class="rating-label"><input type="radio" name="rateFlow" value="1"> 1</label>
+              <label class="rating-label"><input type="radio" name="rateFlow" value="2"> 2</label>
+              <label class="rating-label"><input type="radio" name="rateFlow" value="3" checked> 3</label>
+              <label class="rating-label"><input type="radio" name="rateFlow" value="4"> 4</label>
+              <label class="rating-label"><input type="radio" name="rateFlow" value="5"> 5</label>
+            </div>
+          </div>
+        </fieldset>
+
+        <div class="form-group">
+          <label for="comment">感想</label>
+          <textarea id="comment" name="comment" rows="4" placeholder="今日のサウナの感想を書いてみよう" required></textarea>
+        </div>
+
+        <div class="form-actions">
+          <!-- onclick も付けて、イベント登録が失敗しても保存できるようにする -->
+          <button
+            type="button"
+            class="btn-primary"
+            id="submit-btn"
+            onclick="window.saunaSaveRecord(event)"
+          >記録を保存</button>
+          <button type="button" class="btn-secondary hidden" id="cancel-edit-btn">編集をキャンセル</button>
+        </div>
+        <!-- 保存結果のメッセージ（app.js が表示） -->
+        <p id="save-message" class="save-message hidden" role="status"></p>
+      </form>
+    </section>
+
+    <section class="log-section">
+      <h2>記録一覧</h2>
+
+      <!-- 検索・ソートツールバー -->
+      <div class="toolbar">
+        <div class="form-group toolbar-item">
+          <label for="search-input">検索</label>
+          <input type="search" id="search-input" placeholder="施設名・訪問日時・住所">
+        </div>
+        <div class="toolbar-row">
+          <div class="form-group toolbar-item">
+            <label for="sort-by">並び替え</label>
+            <select id="sort-by">
+              <option value="visitDateTime">訪問日時</option>
+              <option value="facility">施設名</option>
+              <option value="seiri">整い度</option>
+            </select>
+          </div>
+          <div class="form-group toolbar-item">
+            <label for="sort-order">順序</label>
+            <select id="sort-order">
+              <option value="desc">降順（新しい・高い順）</option>
+              <option value="asc">昇順</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <p id="empty-message" class="empty-message">まだ記録がありません。上のフォームから追加してください。</p>
+      <p id="no-result-message" class="empty-message hidden">検索条件に一致する記録がありません。</p>
+      <ul id="log-list" class="log-list"></ul>
+    </section>
+  </div>
+
+  <!-- index.html と同じフォルダの main.js だけ読み込む（パス問題を防ぐ） -->
+  <script src="main.js"></script>
+</body>
+</html>

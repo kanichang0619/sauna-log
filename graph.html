@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>訪問グラフ - サウナログ</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container container-wide">
+    <header>
+      <h1>📊 訪問グラフ</h1>
+      <p class="subtitle">施設ごとの訪問回数</p>
+
+      <nav class="page-nav" aria-label="メインメニュー">
+        <a href="index.html" class="nav-link">記録</a>
+        <a href="graph.html" class="nav-link active" aria-current="page">訪問グラフ</a>
+        <a href="map.html" class="nav-link">地図</a>
+      </nav>
+    </header>
+
+    <section class="chart-section">
+      <p id="chart-empty" class="empty-message hidden">
+        まだ記録がありません。<a href="index.html">記録ページ</a>から追加してください。
+      </p>
+      <!-- Chart.js がこの canvas にグラフを描画 -->
+      <div class="chart-wrap">
+        <canvas id="visit-chart" aria-label="施設ごとの訪問回数グラフ"></canvas>
+      </div>
+    </section>
+  </div>
+
+  <!-- Chart.js（グラフ描画ライブラリ）を CDN から読み込み -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/graph.js"></script>
+</body>
+</html>

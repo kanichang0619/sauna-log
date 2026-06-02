@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>訪問地図 - サウナログ</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Leaflet（地図ライブラリ）の CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  >
+</head>
+<body class="map-page">
+  <div class="container container-wide">
+    <header>
+      <h1>🗺️ 訪問地図</h1>
+      <p class="subtitle">訪問したサウナ施設をマップで確認</p>
+
+      <nav class="page-nav" aria-label="メインメニュー">
+        <a href="index.html" class="nav-link">記録</a>
+        <a href="graph.html" class="nav-link">訪問グラフ</a>
+        <a href="map.html" class="nav-link active" aria-current="page">地図</a>
+      </nav>
+    </header>
+
+    <p id="map-hint" class="hint map-hint">
+      ピンをタップすると、その施設の記録一覧が下に表示されます。
+      初回訪問時に住所を登録し、位置情報が取得できた施設のみ表示されます。
+    </p>
+
+    <p id="map-empty" class="empty-message hidden">
+      地図に表示できる施設がありません。記録ページで初回訪問の施設に住所を入力してください。
+    </p>
+
+    <!-- Leaflet が地図を描画する領域 -->
+    <div id="map" class="map-container" role="application" aria-label="訪問施設マップ"></div>
+
+    <!-- マーカー選択時に記録一覧を表示 -->
+    <section class="map-records-section hidden" id="map-records-section">
+      <h2 id="map-records-title">施設の記録</h2>
+      <ul id="map-records-list" class="log-list map-records-list"></ul>
+    </section>
+
+    <section class="map-pending-section hidden" id="map-pending-section">
+      <h2>位置情報を取得中の施設</h2>
+      <p class="hint">住所は登録済みですが、地図の座標が未取得の施設です。「位置を再取得」で再試行できます。</p>
+      <ul id="map-pending-list" class="pending-list"></ul>
+    </section>
+  </div>
+
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
+  <script src="js/storage.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/map.js"></script>
+</body>
+</html>

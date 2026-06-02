@@ -24,7 +24,7 @@
         <span id="total-visits" class="stats-value">0</span>
         <span class="stats-unit">回</span>
       </div>
-      <!-- アプリの準備状態（main.js が更新） -->
+      <!-- アプリの準備状態（app.js が更新） -->
       <p id="boot-status" class="boot-status">読み込み中...</p>
     </header>
 
@@ -106,7 +106,7 @@
             <div class="set-inputs">
               <div class="form-group">
                 <label for="sauna-set-minutes">1回の時間（分）</label>
-                <input type="number" id="sauna-set-minutes" name="saunaSetMinutes" min="1" max="60" value="12" required>
+                <input type="number" id="sauna-set-minutes" name="saunaSetMinutes" min="1" max="60" value="8" required>
               </div>
               <div class="form-group">
                 <label for="sauna-set-count">回数</label>
@@ -134,7 +134,7 @@
             <div class="set-inputs">
               <div class="form-group">
                 <label for="outdoor-set-minutes">1回の時間（分）</label>
-                <input type="number" id="outdoor-set-minutes" name="outdoorSetMinutes" min="1" max="60" value="10" required>
+                <input type="number" id="outdoor-set-minutes" name="outdoorSetMinutes" min="1" max="60" value="5" required>
               </div>
               <div class="form-group">
                 <label for="outdoor-set-count">回数</label>
@@ -211,7 +211,6 @@
             type="button"
             class="btn-primary"
             id="submit-btn"
-            onclick="window.saunaSaveRecord(event)"
           >記録を保存</button>
           <button type="button" class="btn-secondary hidden" id="cancel-edit-btn">編集をキャンセル</button>
         </div>
@@ -221,7 +220,14 @@
     </section>
 
     <section class="log-section">
-      <h2>記録一覧</h2>
+      <div class="log-section-header">
+        <h2>記録一覧</h2>
+        <div class="data-controls">
+          <button type="button" class="btn-secondary btn-small" id="export-btn">エクスポート</button>
+          <button type="button" class="btn-secondary btn-small" id="import-btn">インポート</button>
+          <input type="file" id="import-file" accept=".json" class="hidden">
+        </div>
+      </div>
 
       <!-- 検索・ソートツールバー -->
       <div class="toolbar">
@@ -254,7 +260,8 @@
     </section>
   </div>
 
-  <!-- index.html と同じフォルダの main.js だけ読み込む（パス問題を防ぐ） -->
-  <script src="main.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>

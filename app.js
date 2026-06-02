@@ -1,6 +1,8 @@
 /**
  * app.js - メインページ（記録の追加・編集・一覧）
  */
+(function () {
+"use strict";
 
 const RATING_NAMES = [
   "rateSauna",
@@ -31,6 +33,9 @@ let sortBySelect;
 let sortOrderSelect;
 let facilitySuggestions;
 let saveMessage;
+let exportBtn;
+let importBtn;
+let importFileInput;
 
 let loadLogs;
 let saveLogs;
@@ -402,6 +407,36 @@ function deleteLog(id) {
   renderLogs();
 }
 
+function handleExport() {
+  try {
+    window.SaunaStorage.exportAllData();
+  } catch (err) {
+    alert("エクスポートに失敗しました: " + (err && err.message ? err.message : err));
+  }
+}
+
+function handleImportFile(file) {
+  if (!file) return;
+  if (!confirm("既存のデータをインポートした内容で上書きします。よろしいですか？")) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      window.SaunaStorage.importAllData(e.target.result);
+      migrateLegacyLogs();
+      updateFacilitySuggestions();
+      renderLogs();
+      showSaveMessage("インポートが完了しました。");
+    } catch (err) {
+      const msg = err && err.message ? err.message : "インポートに失敗しました。";
+      showSaveMessage(msg, true);
+      alert(msg);
+    } finally {
+      importFileInput.value = "";
+    }
+  };
+  reader.readAsText(file, "utf-8");
+}
+
 /** 保存ボタン押下時の処理 */
 function handleSaveClick() {
   // ボタンが効いているかすぐ分かるよう表示
@@ -440,7 +475,7 @@ function setBootStatus(text, isOk) {
 
 function initApp() {
   if (!window.SaunaStorage || !window.SaunaUtils) {
-    setBootStatus("読み込み失敗 — main.js を確認してください", false);
+    setBootStatus("読み込み失敗 — スクリプトの読み込みを確認してください", false);
     alert(
       "プログラムの読み込みに失敗しました。\n" +
         "sauna-log フォルダ内の index.html を開き直してください。"
@@ -493,6 +528,9 @@ function initApp() {
   sortOrderSelect = document.getElementById("sort-order");
   facilitySuggestions = document.getElementById("facility-suggestions");
   saveMessage = document.getElementById("save-message");
+  exportBtn = document.getElementById("export-btn");
+  importBtn = document.getElementById("import-btn");
+  importFileInput = document.getElementById("import-file");
 
   if (!form || !submitBtn) {
     alert("画面の読み込みに失敗しました。ページを再読み込みしてください。");
@@ -509,6 +547,9 @@ function initApp() {
   });
 
   cancelEditBtn.addEventListener("click", cancelEdit);
+  if (exportBtn) exportBtn.addEventListener("click", handleExport);
+  if (importBtn) importBtn.addEventListener("click", () => importFileInput.click());
+  if (importFileInput) importFileInput.addEventListener("change", (e) => handleImportFile(e.target.files[0]));
   facilityInput.addEventListener("input", updateAddressHint);
   facilityInput.addEventListener("change", updateAddressHint);
   searchInput.addEventListener("input", renderLogs);
@@ -555,3 +596,5 @@ if (document.readyState === "loading") {
 } else {
   startApp();
 }
+
+})();

@@ -49,7 +49,14 @@ function loadLogs() {
  * @param {Array} logs
  */
 function saveLogs(logs) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(logs));
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(logs));
+  } catch (e) {
+    if (e.name === "QuotaExceededError" || e.name === "NS_ERROR_DOM_QUOTA_REACHED") {
+      throw new Error("ストレージの容量が不足しています。古い記録を削除してから再試行してください。");
+    }
+    throw e;
+  }
 }
 
 /**
@@ -75,7 +82,14 @@ function loadFacilities() {
  * @param {Object} facilities
  */
 function saveFacilities(facilities) {
-  localStorage.setItem(FACILITIES_KEY, JSON.stringify(facilities));
+  try {
+    localStorage.setItem(FACILITIES_KEY, JSON.stringify(facilities));
+  } catch (e) {
+    if (e.name === "QuotaExceededError" || e.name === "NS_ERROR_DOM_QUOTA_REACHED") {
+      throw new Error("ストレージの容量が不足しています。");
+    }
+    throw e;
+  }
 }
 
 /**
@@ -329,6 +343,44 @@ function migrateLegacyLogs() {
   }
 }
 
+/**
+ * 全データを JSON ファイルとしてダウンロード
+ */
+function exportAllData() {
+  const payload = {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    entries: loadLogs(),
+    facilities: loadFacilities(),
+  };
+  const json = JSON.stringify(payload, null, 2);
+  const blob = new Blob([json], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = `sauna-log-backup-${new Date().toISOString().slice(0, 10)}.json`;
+  anchor.click();
+  URL.revokeObjectURL(url);
+}
+
+/**
+ * JSON 文字列からデータを復元（既存データを上書き）
+ * @param {string} jsonString
+ */
+function importAllData(jsonString) {
+  let data;
+  try {
+    data = JSON.parse(jsonString);
+  } catch {
+    throw new Error("ファイルの形式が正しくありません（JSON として読み込めませんでした）。");
+  }
+  if (!Array.isArray(data.entries) || !data.facilities || typeof data.facilities !== "object") {
+    throw new Error("このファイルはサウナログのバックアップ形式ではありません。");
+  }
+  saveLogs(data.entries);
+  saveFacilities(data.facilities);
+}
+
 // 他の JS ファイルから window 経由で使えるように公開
 window.SaunaStorage = {
   STORAGE_KEY,
@@ -351,4 +403,6 @@ window.SaunaStorage = {
   getMappableFacilities,
   getLogsByFacilityId,
   migrateLegacyLogs,
+  exportAllData,
+  importAllData,
 };

@@ -170,6 +170,8 @@ header h1 {
   border-radius: 10px;
   padding: 1rem;
   margin-bottom: 1.25rem;
+  /* ブラウザ既定の min-width:min-content を打ち消してはみ出しを防ぐ */
+  min-width: 0;
 }
 
 .fieldset legend {
@@ -338,6 +340,8 @@ textarea:focus {
 input[type="date"],
 input[type="time"] {
   color-scheme: dark;
+  /* スマホでアイコン込みの最小幅がコンテナを超えてはみ出すのを防ぐ */
+  min-width: 0;
 }
 
 select {
@@ -730,11 +734,12 @@ select {
   position: relative;
   width: 100%;
   min-height: 280px;
-  max-height: 70vh;
+  /* max-height を削除：施設が増えてもページスクロールで全件表示できるようにする */
 }
 
 .chart-wrap canvas {
-  max-height: 70vh;
+  /* max-height を削除：JS で動的に高さを設定するため制約しない */
+  display: block;
 }
 
 /* ============================================

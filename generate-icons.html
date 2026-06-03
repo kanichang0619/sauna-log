@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>サウナログ アイコン生成ツール</title>
+  <style>
+    body { font-family: sans-serif; background: #1a1a2e; color: #e2e8f0; padding: 2rem; }
+    h1 { color: #ed8936; margin-bottom: 0.5rem; }
+    p  { color: #a0aec0; margin-bottom: 2rem; }
+    .icons { display: flex; gap: 2rem; flex-wrap: wrap; margin-bottom: 2rem; }
+    .icon-box { text-align: center; }
+    .icon-box span { display: block; font-size: 0.85rem; color: #a0aec0; margin-top: 0.5rem; }
+    canvas { border: 1px solid #4a5568; border-radius: 8px; }
+    button {
+      display: block; margin: 0 auto 0.5rem;
+      padding: 0.5rem 1.2rem; background: #ed8936; color: #1a1a2e;
+      border: none; border-radius: 6px; font-weight: bold; cursor: pointer;
+      font-size: 0.85rem;
+    }
+    .note { background: rgba(237,137,54,0.12); border: 1px solid rgba(237,137,54,0.4);
+            border-radius: 8px; padding: 1rem; font-size: 0.88rem; line-height: 1.7; }
+    code { background: rgba(255,255,255,0.1); padding: 0.1em 0.4em; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>🧖 サウナログ アイコン生成ツール</h1>
+  <p>下のボタンをクリックしてアイコンをダウンロードし、<code>icons/</code> フォルダに保存してください。</p>
+
+  <div class="icons">
+    <div class="icon-box">
+      <canvas id="c192" width="192" height="192"></canvas>
+      <span>icon-192.png（192×192）</span>
+      <button onclick="download('c192','icon-192.png')">ダウンロード</button>
+    </div>
+    <div class="icon-box">
+      <canvas id="c512" width="192" height="192" style="width:96px;height:96px"></canvas>
+      <span>icon-512.png（512×512）</span>
+      <button onclick="download('c512','icon-512.png')">ダウンロード</button>
+    </div>
+    <div class="icon-box">
+      <canvas id="c180" width="180" height="180"></canvas>
+      <span>apple-touch-icon.png（180×180）</span>
+      <button onclick="download('c180','apple-touch-icon.png')">ダウンロード</button>
+    </div>
+  </div>
+
+  <div class="note">
+    <strong>📁 配置場所：</strong><br>
+    ダウンロードしたファイルを <code>sauna-log/icons/</code> フォルダに入れてください。<br>
+    <code>icons/icon-192.png</code><br>
+    <code>icons/icon-512.png</code><br>
+    <code>icons/apple-touch-icon.png</code>
+  </div>
+
+  <script>
+    /** アイコンを canvas に描画する */
+    function drawIcon(canvas, size) {
+      canvas.width  = size;
+      canvas.height = size;
+      const ctx = canvas.getContext("2d");
+      const cx  = size / 2;
+      const cy  = size / 2;
+
+      // ---- 背景（ダークブルー）----
+      ctx.fillStyle = "#1a1a2e";
+      ctx.fillRect(0, 0, size, size);
+
+      // ---- 内側カード（少し明るいブルー）----
+      const pad = size * 0.08;
+      const r   = size * 0.18;
+      ctx.fillStyle = "#16213e";
+      ctx.beginPath();
+      ctx.roundRect(pad, pad, size - pad * 2, size - pad * 2, r);
+      ctx.fill();
+
+      // ---- 蒸気の波（3本）----
+      ctx.strokeStyle = "#ed8936";
+      ctx.lineWidth   = size * 0.05;
+      ctx.lineCap     = "round";
+      const steamBaseY = cy - size * 0.05;
+      [-size * 0.15, 0, size * 0.15].forEach((dx) => {
+        ctx.beginPath();
+        ctx.moveTo(cx + dx, steamBaseY + size * 0.06);
+        ctx.bezierCurveTo(
+          cx + dx - size * 0.07, steamBaseY,
+          cx + dx + size * 0.07, steamBaseY - size * 0.1,
+          cx + dx,               steamBaseY - size * 0.2
+        );
+        ctx.stroke();
+      });
+
+      // ---- オレンジの石（円）----
+      ctx.fillStyle = "#ed8936";
+      ctx.beginPath();
+      ctx.arc(cx, cy + size * 0.14, size * 0.22, 0, Math.PI * 2);
+      ctx.fill();
+
+      // ---- 「サ」の文字（白）----
+      ctx.fillStyle = "#fff";
+      ctx.font      = `bold ${size * 0.22}px sans-serif`;
+      ctx.textAlign    = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("サ", cx, cy + size * 0.14);
+    }
+
+    // 3種類のサイズを描画
+    drawIcon(document.getElementById("c192"), 192);
+    drawIcon(document.getElementById("c512"), 512);
+    drawIcon(document.getElementById("c180"), 180);
+
+    /** canvas の内容を PNG としてダウンロードする */
+    function download(canvasId, filename) {
+      const canvas = document.getElementById(canvasId);
+      // 512 は表示上 192px に縮小しているので実際のサイズで再描画
+      const size = filename.includes("512") ? 512 : canvas.width;
+      const tmp  = document.createElement("canvas");
+      drawIcon(tmp, size);
+      const a = document.createElement("a");
+      a.href     = tmp.toDataURL("image/png");
+      a.download = filename;
+      a.click();
+    }
+  </script>
+</body>
+</html>

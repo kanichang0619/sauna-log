@@ -5,6 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>記録追加 - サウナログ</title>
   <link rel="stylesheet" href="style.css">
+  <!-- PWA: アプリの設定ファイル -->
+  <link rel="manifest" href="/sauna-log/manifest.json">
+  <meta name="theme-color" content="#1a1a2e">
+  <!-- iOS Safari 用: ホーム画面アプリとして動作させる設定 -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="サウナログ">
+  <link rel="apple-touch-icon" href="/sauna-log/icons/apple-touch-icon.png">
 </head>
 <body>
   <div class="container">
@@ -269,5 +277,16 @@
   <script src="app.js"></script>
   <script type="module" src="js/auth.js"></script>
   <script type="module" src="js/cloud-storage.js"></script>
+  <!-- Service Worker の登録（PWA のオフライン機能・キャッシュを有効化） -->
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker
+          .register("/sauna-log/service-worker.js", { scope: "/sauna-log/" })
+          .then(() => console.log("[SW] Service Worker 登録完了"))
+          .catch((err) => console.error("[SW] Service Worker 登録失敗:", err));
+      });
+    }
+  </script>
 </body>
 </html>

@@ -152,7 +152,9 @@ function prefillFromLastVisit(facilityName) {
   document.getElementById("stay-minutes").value = last.stayMinutes;
   document.getElementById("sauna-temp").value   = last.saunaTemp;
   document.getElementById("water-temp").value   = last.waterTemp;
-  document.getElementById("lourou").value        = last.lourou || "なし";
+  document.getElementById("lourou").value        = last.lourou   || "なし";
+  document.getElementById("restType").value      = last.restType || "外気浴";
+  document.getElementById("crowding").value      = last.crowding || "普通";
   document.getElementById("seiri").value         = last.seiri;
 
   const sets = last.sets;
@@ -255,6 +257,8 @@ function buildEntryFromForm(formData, existingEntry = null) {
     saunaTemp:    getNumber(formData, "saunaTemp"),
     waterTemp:    getNumber(formData, "waterTemp"),
     lourou:       formData.get("lourou") || "なし",
+    restType:     formData.get("restType") || "外気浴",
+    crowding:     formData.get("crowding") || "普通",
     seiri:        migrateSeiriScore(getNumber(formData, "seiri")),
     sets: {
       sauna:   { minutesPerRound: getNumber(formData, "saunaSetMinutes"),   count: getNumber(formData, "saunaSetCount")   },
@@ -321,7 +325,9 @@ function fillFormFromEntry(entry) {
   document.getElementById("stay-minutes").value          = normalized.stayMinutes;
   document.getElementById("sauna-temp").value            = normalized.saunaTemp;
   document.getElementById("water-temp").value            = normalized.waterTemp;
-  document.getElementById("lourou").value                = normalized.lourou || "なし";
+  document.getElementById("lourou").value                = normalized.lourou   || "なし";
+  document.getElementById("restType").value              = normalized.restType || "外気浴";
+  document.getElementById("crowding").value              = normalized.crowding || "普通";
   document.getElementById("seiri").value                 = normalized.seiri;
 
   const sets = normalized.sets;

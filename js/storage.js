@@ -274,6 +274,8 @@ function normalizeEntry(entry) {
       flow: 0,
     },
     lourou: entry.lourou || "なし",
+    restType: entry.restType || "外気浴",
+    crowding: entry.crowding || "普通",
     comment: entry.comment || "",
     createdAt: entry.createdAt,
     updatedAt: entry.updatedAt || entry.createdAt,

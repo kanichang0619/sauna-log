@@ -95,11 +95,13 @@ function createLogItemElement(rawEntry) {
     ${address ? `<p class="log-address">📍 ${escapeHtml(address)}</p>` : ""}
     <div class="log-meta">
       <span class="meta-chip">滞在 ${escapeHtml(formatStayDuration(entry.stayHours, entry.stayMinutes))}</span>
+      <span class="meta-chip">混雑 ${escapeHtml(entry.crowding || "普通")}</span>
       <span class="meta-chip">サウナ ${escapeHtml(String(entry.saunaTemp))}℃</span>
       <span class="meta-chip">水風呂 ${escapeHtml(String(entry.waterTemp))}℃</span>
       ${entry.lourou && entry.lourou !== "なし"
         ? `<span class="meta-chip">ロウリュ ${escapeHtml(entry.lourou)}</span>`
         : ""}
+      <span class="meta-chip">${escapeHtml(entry.restType || "外気浴")}</span>
       <span class="meta-chip seiri-score">整い ${escapeHtml(formatSeiriScore(entry.seiri))}</span>
     </div>
     <details class="log-details">
@@ -110,7 +112,7 @@ function createLogItemElement(rawEntry) {
           <ul class="detail-list">
             <li>${escapeHtml(formatSetLine(sets.sauna,   "サウナ"))}</li>
             <li>${escapeHtml(formatSetLine(sets.water,   "水風呂"))}</li>
-            <li>${escapeHtml(formatSetLine(sets.outdoor, "外気浴"))}</li>
+            <li>${escapeHtml(formatSetLine(sets.outdoor, "休憩"))}</li>
           </ul>
         </div>
         <div class="detail-section">

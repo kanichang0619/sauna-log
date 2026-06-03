@@ -32,7 +32,7 @@
         <input type="hidden" id="edit-id" name="editId" value="">
 
         <fieldset class="fieldset">
-          <legend>基本情報</legend>
+          <legend>施設情報</legend>
 
           <div class="form-group">
             <label for="facility">施設名</label>
@@ -48,6 +48,39 @@
             <input type="text" id="facility-address" name="facilityAddress" placeholder="例：東京都渋谷区○○ 1-2-3">
             <p class="hint" id="address-hint">初めて訪問する施設は住所の入力が必須です。2回目以降は空欄で構いません。</p>
           </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="sauna-temp">サウナ温度（℃）</label>
+              <input type="number" id="sauna-temp" name="saunaTemp" min="0" max="150" value="90" required>
+            </div>
+            <div class="form-group">
+              <label for="water-temp">水風呂温度（℃）</label>
+              <input type="number" id="water-temp" name="waterTemp" min="0" max="30" value="16" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="lourou">ロウリュ</label>
+            <select id="lourou" name="lourou">
+              <option value="なし">なし</option>
+              <option value="セルフ">セルフ</option>
+              <option value="オート">オート</option>
+              <option value="アウフグース">アウフグース</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="restType">休憩タイプ</label>
+            <select id="restType" name="restType">
+              <option value="外気浴">外気浴</option>
+              <option value="内気浴">内気浴</option>
+            </select>
+          </div>
+        </fieldset>
+
+        <fieldset class="fieldset">
+          <legend>訪問情報</legend>
 
           <div class="form-row">
             <div class="form-group">
@@ -74,24 +107,12 @@
             </div>
           </div>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label for="sauna-temp">サウナ温度（℃）</label>
-              <input type="number" id="sauna-temp" name="saunaTemp" min="0" max="150" value="90" required>
-            </div>
-            <div class="form-group">
-              <label for="water-temp">水風呂温度（℃）</label>
-              <input type="number" id="water-temp" name="waterTemp" min="0" max="30" value="16" required>
-            </div>
-          </div>
-
           <div class="form-group">
-            <label for="lourou">ロウリュ</label>
-            <select id="lourou" name="lourou">
-              <option value="なし">なし</option>
-              <option value="セルフ">セルフ</option>
-              <option value="オート">オート</option>
-              <option value="アウフグース">アウフグース</option>
+            <label for="crowding">混雑度</label>
+            <select id="crowding" name="crowding">
+              <option value="空いてる">空いてる</option>
+              <option value="普通" selected>普通</option>
+              <option value="混んでる">混んでる</option>
             </select>
           </div>
 
@@ -136,7 +157,7 @@
           </div>
 
           <div class="set-block">
-            <h3 class="set-title">🌬️ 外気浴</h3>
+            <h3 class="set-title">🌬️ 休憩</h3>
             <div class="set-inputs">
               <div class="form-group">
                 <label for="outdoor-set-minutes">1回の時間（分）</label>

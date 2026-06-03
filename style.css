@@ -67,35 +67,36 @@ header h1 {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  min-height: 36px;
-  margin-bottom: 0.75rem;
+  min-height: 28px;
+  margin-bottom: 0.5rem;
 }
 
-/* Googleでログインボタン */
+/* Googleでログインボタン（他の小ボタンと同程度のサイズ感） */
 .btn-login {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.45rem 0.9rem;
-  background: #fff;
-  color: #1a1a2e;
-  border: none;
+  gap: 0.3rem;
+  padding: 0.3rem 0.65rem;
+  background: rgba(255, 255, 255, 0.1);
+  color: #cbd5e0;
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 6px;
-  font-size: 0.85rem;
-  font-weight: bold;
+  font-size: 0.78rem;
+  font-weight: normal;
   cursor: pointer;
-  min-height: 36px;
+  min-height: 30px;
   -webkit-tap-highlight-color: transparent;
+  white-space: nowrap;
 }
 
 .btn-login:active {
-  opacity: 0.85;
+  background: rgba(255, 255, 255, 0.18);
 }
 
 /* Google の G ロゴ（SVG インライン） */
 .btn-login svg {
-  width: 16px;
-  height: 16px;
+  width: 13px;
+  height: 13px;
   flex-shrink: 0;
 }
 
@@ -103,23 +104,24 @@ header h1 {
 .user-info {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.4rem;
 }
 
 /* プロフィール画像（丸型） */
 .user-avatar {
-  width: 28px;
-  height: 28px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   object-fit: cover;
   border: 1px solid rgba(255, 255, 255, 0.2);
+  flex-shrink: 0;
 }
 
 /* ユーザー名（長い場合は省略） */
 .user-name {
-  font-size: 0.85rem;
-  color: #e2e8f0;
-  max-width: 130px;
+  font-size: 0.78rem;
+  color: #a0aec0;
+  max-width: 110px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -127,19 +129,27 @@ header h1 {
 
 /* ログアウトボタン */
 .btn-logout {
-  padding: 0.3rem 0.6rem;
+  padding: 0.2rem 0.5rem;
   background: transparent;
-  color: #a0aec0;
+  color: #718096;
   border: 1px solid #4a5568;
   border-radius: 6px;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   cursor: pointer;
-  min-height: 32px;
+  min-height: 26px;
   -webkit-tap-highlight-color: transparent;
+  white-space: nowrap;
 }
 
 .btn-logout:active {
   background: rgba(255, 255, 255, 0.05);
+}
+
+/* スマホ：ユーザー名を短めに省略 */
+@media (max-width: 480px) {
+  .user-name {
+    max-width: 70px;
+  }
 }
 
 /* ページ間ナビゲーション */

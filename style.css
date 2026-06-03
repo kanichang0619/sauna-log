@@ -145,6 +145,45 @@ header h1 {
   background: rgba(255, 255, 255, 0.05);
 }
 
+/* 同期ステータス表示（cloud-storage.js が動的に挿入） */
+.sync-status {
+  font-size: 0.72rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  margin-right: 0.4rem;
+  white-space: nowrap;
+  transition: opacity 0.4s;
+}
+
+.sync-status-syncing {
+  color: #a0aec0;
+}
+
+.sync-status-ok {
+  color: #9ae6b4;
+  background: rgba(104, 211, 145, 0.15);
+}
+
+.sync-status-migrated {
+  color: #90cdf4;
+  background: rgba(144, 205, 244, 0.15);
+}
+
+.sync-status-error {
+  color: #fc8181;
+  background: rgba(252, 129, 129, 0.15);
+}
+
+.sync-status-offline {
+  color: #f6ad55;
+  background: rgba(237, 137, 54, 0.12);
+}
+
+/* フェードアウト用 */
+.sync-status-fade {
+  opacity: 0;
+}
+
 /* スマホ：ユーザー名を短めに省略 */
 @media (max-width: 480px) {
   .user-name {

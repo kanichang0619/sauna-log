@@ -14,6 +14,9 @@
 let currentYear;
 let currentMonth;
 
+// 現在選択中の日付文字列（"YYYY-MM-DD"）。削除後の再描画に使う
+let selectedDateStr = null;
+
 // ============================================================
 // DOM 要素の参照（HTML の id と紐付ける）
 // ============================================================
@@ -183,6 +186,7 @@ function toDateStr(year, month, day) {
  * @param {Array}  records - その日の記録オブジェクトの配列
  */
 function showDayRecords(dateStr, records) {
+  selectedDateStr = dateStr; // 削除後の再描画のために保持
   const [y, m, d] = dateStr.split("-").map(Number);
   dayRecordsTitle.textContent =
     `${y}年${m}月${d}日の記録（${records.length}件）`;
@@ -202,8 +206,49 @@ function showDayRecords(dateStr, records) {
  * 選択した日の記録一覧を非表示にする（月移動時などに呼ぶ）
  */
 function hideDayRecords() {
+  selectedDateStr = null;
   dayRecordsSection.classList.add("hidden");
   dayRecordsList.innerHTML = "";
+}
+
+// ============================================================
+// 記録の削除
+// ============================================================
+
+/**
+ * カレンダーページから記録を削除する
+ * localStorage と Firestore（ログイン中）の両方から削除し、
+ * カレンダーグリッドと記録一覧を再描画する
+ *
+ * @param {string} id - 削除するエントリの ID
+ */
+function deleteFromCalendar(id) {
+  if (!confirm("この記録を削除しますか？")) return;
+
+  // localStorage から削除
+  window.SaunaStorage.saveLogs(
+    window.SaunaStorage.loadLogs().filter((e) => e.id !== id)
+  );
+
+  // ログイン中は Firestore からも削除
+  const uid = window.SaunaAuth && window.SaunaAuth.uid;
+  if (uid && window.SaunaCloud) {
+    window.SaunaCloud.deleteEntryFromCloud(uid, id)
+      .catch((err) => console.error("[SaunaCloud] 削除エラー:", err));
+  }
+
+  // カレンダーグリッドを再描画（バッジ数を更新）
+  renderCalendar(currentYear, currentMonth);
+
+  // 選択中の日の記録を再表示（削除後の残りを表示、0件なら非表示）
+  if (selectedDateStr) {
+    const remaining = buildVisitMap(currentYear, currentMonth)[selectedDateStr] || [];
+    if (remaining.length > 0) {
+      showDayRecords(selectedDateStr, remaining);
+    } else {
+      hideDayRecords();
+    }
+  }
 }
 
 // ============================================================
@@ -275,7 +320,22 @@ function createDayRecordItem(entry) {
     ${entry.comment
       ? `<p class="log-comment">${escapeHtml(entry.comment)}</p>`
       : ""}
+    <div class="log-actions">
+      <button type="button" class="btn-edit">編集</button>
+      <button type="button" class="btn-delete">削除</button>
+    </div>
   `;
+
+  // 編集ボタン：sessionStorage に ID を保存して記録追加ページへ移動
+  li.querySelector(".btn-edit").addEventListener("click", () => {
+    sessionStorage.setItem("sauna-edit-id", entry.id);
+    window.location.href = "index.html";
+  });
+
+  // 削除ボタン
+  li.querySelector(".btn-delete").addEventListener("click", () => {
+    deleteFromCalendar(entry.id);
+  });
 
   return li;
 }

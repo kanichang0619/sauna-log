@@ -35,13 +35,13 @@ const userName   = document.getElementById("user-name");
 // ============================================================
 getRedirectResult(auth).then((result) => {
   if (result?.user) {
-    console.log("[Auth] リダイレクトログイン成功");
+    console.log("[Auth] リダイレクトログイン成功:", result.user.email);
+  } else {
+    console.log("[Auth] getRedirectResult: null（通常ロードまたはリダイレクト未実施）");
   }
 }).catch((error) => {
-  if (error?.code) {
-    console.warn("[Auth] リダイレクト結果エラー:", error.code);
-    alert("ログインに失敗しました。もう一度お試しください。");
-  }
+  console.error("[Auth] getRedirectResult エラー:", error.code, error.message);
+  alert(`[デバッグ] リダイレクト結果エラー\nコード: ${error.code}\n\nスクショを撮ってください`);
 });
 
 // ============================================================
@@ -53,12 +53,14 @@ getRedirectResult(auth).then((result) => {
  * リダイレクト方式を使用。ブラウザ・PWA・パスキーすべてに対応。
  */
 async function handleLogin() {
+  console.log("[Auth] ログインボタン押下");
+  alert("[デバッグ] ログインボタンが押されました。OKを押すとGoogleページに移動します。");
   const provider = new GoogleAuthProvider();
   try {
     await signInWithRedirect(auth, provider);
   } catch (error) {
-    console.error("[Auth] ログインエラー:", error);
-    alert("ログインに失敗しました。もう一度お試しください。");
+    console.error("[Auth] ログインエラー:", error.code, error.message);
+    alert(`[デバッグ] ログインエラー\nコード: ${error.code}\n\nスクショを撮ってください`);
   }
 }
 

@@ -135,3 +135,8 @@ function renderVisitChart() {
 }
 
 renderVisitChart();
+
+// Firestore 同期完了後にグラフを再描画する
+window.addEventListener("sauna-data-updated", () => {
+  renderVisitChart();
+});

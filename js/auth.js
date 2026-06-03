@@ -91,6 +91,9 @@ onAuthStateChanged(auth, (user) => {
     window.SaunaAuth.user = user;
     window.SaunaAuth.uid  = user.uid;
 
+    // cloud-storage.js に「ログインした」ことを通知する
+    window.dispatchEvent(new CustomEvent("sauna-auth-changed", { detail: { user } }));
+
   } else {
     // ---- 未ログイン ----
     if (loginBtn)  loginBtn.classList.remove("hidden");
@@ -99,6 +102,9 @@ onAuthStateChanged(auth, (user) => {
     window.SaunaAuth = window.SaunaAuth || {};
     window.SaunaAuth.user = null;
     window.SaunaAuth.uid  = null;
+
+    // cloud-storage.js に「ログアウトした」ことを通知する
+    window.dispatchEvent(new CustomEvent("sauna-auth-changed", { detail: { user: null } }));
   }
 });
 

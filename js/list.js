@@ -152,6 +152,14 @@ function createLogItemElement(rawEntry) {
 function deleteLog(id) {
   if (!confirm("この記録を削除しますか？")) return;
   saveLogs(loadLogs().filter((e) => e.id !== id));
+
+  // ログイン中は Firestore からも削除する
+  const uid = window.SaunaAuth && window.SaunaAuth.uid;
+  if (uid && window.SaunaCloud) {
+    window.SaunaCloud.deleteEntryFromCloud(uid, id)
+      .catch((err) => console.error("[SaunaCloud] 削除エラー:", err));
+  }
+
   renderLogs();
 }
 
@@ -274,6 +282,11 @@ function initList() {
   // 初回描画
   migrateLegacyLogs();
   renderLogs();
+
+  // Firestore 同期完了後に一覧を再描画する
+  window.addEventListener("sauna-data-updated", () => {
+    renderLogs();
+  });
 }
 
 if (document.readyState === "loading") {

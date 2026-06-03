@@ -332,3 +332,8 @@ const _now = new Date();
 currentYear  = _now.getFullYear();
 currentMonth = _now.getMonth(); // 0始まり
 renderCalendar(currentYear, currentMonth);
+
+// Firestore 同期完了後にカレンダーを再描画する
+window.addEventListener("sauna-data-updated", () => {
+  renderCalendar(currentYear, currentMonth);
+});

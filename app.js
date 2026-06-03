@@ -377,6 +377,16 @@ function saveEntryFromForm() {
   }
 
   saveLogs(logs);
+
+  // ログイン中は Firestore にも保存する（失敗してもアプリは継続）
+  const uid = window.SaunaAuth && window.SaunaAuth.uid;
+  if (uid && window.SaunaCloud) {
+    window.SaunaCloud.saveEntryToCloud(uid, entry)
+      .catch((err) => console.error("[SaunaCloud] エントリ保存エラー:", err));
+    window.SaunaCloud.saveFacilityToCloud(uid, facility)
+      .catch((err) => console.error("[SaunaCloud] 施設保存エラー:", err));
+  }
+
   cancelEdit();
   showSaveMessage("記録を保存しました。");
 }
@@ -507,6 +517,11 @@ function initApp() {
 
   // 記録一覧ページから「編集」で来た場合はフォームに内容を入れる
   checkEditFromStorage();
+
+  // Firestore 同期後に施設の候補リストを更新する
+  window.addEventListener("sauna-data-updated", () => {
+    updateFacilitySuggestions();
+  });
 
   window.__saunaReady = true;
   setBootStatus("準備完了 — 記録を入力して「記録を保存」を押してください", true);

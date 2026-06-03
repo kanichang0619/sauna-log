@@ -22,13 +22,6 @@ body {
   padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
 }
 
-/* ホーム画面から起動したPWA（スタンドアロンモード）専用
-   Dynamic Island / ノッチが確実に回避されるよう最低4rem（64px）を確保する */
-@media (display-mode: standalone) {
-  body {
-    padding-top: max(4rem, env(safe-area-inset-top));
-  }
-}
 
 .container {
   max-width: 640px;

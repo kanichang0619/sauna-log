@@ -58,6 +58,90 @@ header h1 {
   margin-bottom: 1rem;
 }
 
+/* ============================================
+   ログイン・ユーザー情報バー
+   ============================================ */
+
+/* ナビの下に表示するログインエリア */
+.auth-bar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  min-height: 36px;
+  margin-bottom: 0.75rem;
+}
+
+/* Googleでログインボタン */
+.btn-login {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.9rem;
+  background: #fff;
+  color: #1a1a2e;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: bold;
+  cursor: pointer;
+  min-height: 36px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn-login:active {
+  opacity: 0.85;
+}
+
+/* Google の G ロゴ（SVG インライン） */
+.btn-login svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+/* ログイン後のユーザー情報エリア */
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* プロフィール画像（丸型） */
+.user-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* ユーザー名（長い場合は省略） */
+.user-name {
+  font-size: 0.85rem;
+  color: #e2e8f0;
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ログアウトボタン */
+.btn-logout {
+  padding: 0.3rem 0.6rem;
+  background: transparent;
+  color: #a0aec0;
+  border: 1px solid #4a5568;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  min-height: 32px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn-logout:active {
+  background: rgba(255, 255, 255, 0.05);
+}
+
 /* ページ間ナビゲーション */
 .page-nav {
   display: flex;

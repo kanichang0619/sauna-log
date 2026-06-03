@@ -33,16 +33,31 @@ const userName   = document.getElementById("user-name");
 // 前回のリダイレクトログイン結果を受け取る
 // signInWithRedirect でのログインが成功していた場合に onAuthStateChanged が呼ばれる
 // ============================================================
-getRedirectResult(auth).then((result) => {
-  if (result?.user) {
-    console.log("[Auth] リダイレクトログイン成功:", result.user.email);
-    alert(`[デバッグ] ログイン成功！\nメール: ${result.user.email}\n\nこのアラートが見えたら教えてください`);
-  } else {
-    console.log("[Auth] getRedirectResult: null");
+async function processRedirectResult() {
+  try {
+    const result = await getRedirectResult(auth);
+    if (result?.user) {
+      console.log("[Auth] リダイレクトログイン成功:", result.user.email);
+      alert(`[デバッグ] ログイン成功！\nメール: ${result.user.email}\n\nこのアラートが見えたら教えてください`);
+    } else {
+      console.log("[Auth] getRedirectResult: null");
+    }
+  } catch (error) {
+    console.error("[Auth] getRedirectResult エラー:", error.code, error.message);
+    alert(`[デバッグ] リダイレクト結果エラー\nコード: ${error.code}\n\nスクショを撮ってください`);
   }
-}).catch((error) => {
-  console.error("[Auth] getRedirectResult エラー:", error.code, error.message);
-  alert(`[デバッグ] リダイレクト結果エラー\nコード: ${error.code}\n\nスクショを撮ってください`);
+}
+
+// 通常ロード時にリダイレクト結果を確認
+processRedirectResult();
+
+// bfcache（Safariの戻るボタン等でキャッシュ復元）された場合も再実行
+// bfcache では load イベントが発火しないため getRedirectResult が呼ばれない問題への対処
+window.addEventListener("pageshow", (event) => {
+  if (!event.persisted) return;
+  console.log("[Auth] bfcacheから復元 - getRedirectResultを再実行");
+  alert("[デバッグ] bfcacheから復元されました。これが見えたら教えてください。");
+  processRedirectResult();
 });
 
 // ============================================================

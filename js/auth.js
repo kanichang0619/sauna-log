@@ -31,6 +31,12 @@ const userName   = document.getElementById("user-name");
 // ============================================================
 
 async function processRedirectResult() {
+  // リダイレクトを実際に開始した場合のみ処理する
+  // このフラグがないと全ページ読み込みのたびに呼ばれ、エラーが繰り返される
+  const redirectPending = localStorage.getItem("saunaAuthRedirectPending");
+  if (!redirectPending) return;
+  localStorage.removeItem("saunaAuthRedirectPending");
+
   try {
     const result = await getRedirectResult(auth);
     if (result?.user) {
@@ -38,7 +44,7 @@ async function processRedirectResult() {
     }
   } catch (error) {
     console.error("[Auth] getRedirectResult エラー:", error.code, error.message);
-    alert("ログインに失敗しました。もう一度お試しください。");
+    alert(`ログインに失敗しました。\nエラー: ${error.code || "不明"}\n\nもう一度お試しください。`);
   }
 }
 
@@ -55,9 +61,11 @@ window.addEventListener("pageshow", (event) => {
 
 async function handleLogin() {
   const provider = new GoogleAuthProvider();
+  localStorage.setItem("saunaAuthRedirectPending", "1");
   try {
     await signInWithRedirect(auth, provider);
   } catch (error) {
+    localStorage.removeItem("saunaAuthRedirectPending");
     console.error("[Auth] ログインエラー:", error.code, error.message);
     alert("ログインに失敗しました。もう一度お試しください。");
   }

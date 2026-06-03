@@ -5,7 +5,7 @@
  * インスタンスを作成します。他のファイルはここからインポートして使います。
  */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
-import { initializeAuth, indexedDBLocalPersistence } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
+import { initializeAuth, indexedDBLocalPersistence, browserPopupRedirectResolver } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
 import { getFirestore }   from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
 
 // Firebase Console から取得したプロジェクト設定
@@ -26,6 +26,7 @@ const app = initializeApp(firebaseConfig);
 // sessionStorage をクリアしても認証状態・リダイレクト情報が失われない
 export const auth = initializeAuth(app, {
   persistence: indexedDBLocalPersistence,
+  popupRedirectResolver: browserPopupRedirectResolver,
 });
 
 // Firestore インスタンス（データの読み書きで使う・フェーズ3で使用）

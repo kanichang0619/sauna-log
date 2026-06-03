@@ -34,29 +34,32 @@ const userName   = document.getElementById("user-name");
 // signInWithRedirect でのログインが成功していた場合に onAuthStateChanged が呼ばれる
 // ============================================================
 async function processRedirectResult() {
+  const redirectPending = localStorage.getItem("saunaAuthRedirectPending");
+  localStorage.removeItem("saunaAuthRedirectPending");
+
   try {
-    const result = await getRedirectResult(auth);
+    // 8秒でタイムアウト（getRedirectResultが永遠に待ち続ける場合の検出）
+    const timeoutError = Object.assign(new Error("タイムアウト"), { code: "TIMEOUT" });
+    const result = await Promise.race([
+      getRedirectResult(auth),
+      new Promise((_, reject) => setTimeout(() => reject(timeoutError), 8000)),
+    ]);
+
     if (result?.user) {
-      console.log("[Auth] リダイレクトログイン成功:", result.user.email);
-      alert(`[デバッグ] ログイン成功！\nメール: ${result.user.email}\n\nこのアラートが見えたら教えてください`);
-    } else {
-      console.log("[Auth] getRedirectResult: null");
+      alert(`[デバッグ] ログイン成功！\nメール: ${result.user.email}`);
+    } else if (redirectPending) {
+      alert("[デバッグ] リダイレクト後だが認証結果なし\n（Googleでの認証が完了しなかった）");
     }
   } catch (error) {
-    console.error("[Auth] getRedirectResult エラー:", error.code, error.message);
-    alert(`[デバッグ] リダイレクト結果エラー\nコード: ${error.code}\n\nスクショを撮ってください`);
+    const code = error?.code || error?.message || JSON.stringify(error) || "不明";
+    alert(`[デバッグ] getRedirectResultエラー\nコード: ${code}`);
   }
 }
 
-// 通常ロード時にリダイレクト結果を確認
 processRedirectResult();
 
-// bfcache（Safariの戻るボタン等でキャッシュ復元）された場合も再実行
-// bfcache では load イベントが発火しないため getRedirectResult が呼ばれない問題への対処
 window.addEventListener("pageshow", (event) => {
   if (!event.persisted) return;
-  console.log("[Auth] bfcacheから復元 - getRedirectResultを再実行");
-  alert("[デバッグ] bfcacheから復元されました。これが見えたら教えてください。");
   processRedirectResult();
 });
 
@@ -76,11 +79,13 @@ async function handleLogin() {
       .filter(key => key.includes("firebase"))
       .forEach(key => sessionStorage.removeItem(key));
   } catch (e) { /* ストレージアクセス不可の場合は無視 */ }
+  localStorage.setItem("saunaAuthRedirectPending", "1");
   try {
     await signInWithRedirect(auth, provider);
   } catch (error) {
-    console.error("[Auth] ログインエラー:", error.code, error.message);
-    alert(`[デバッグ] ログインエラー\nコード: ${error.code}\n\nスクショを撮ってください`);
+    localStorage.removeItem("saunaAuthRedirectPending");
+    const code = error?.code || error?.message || "不明";
+    alert(`[デバッグ] signInWithRedirectエラー\nコード: ${code}`);
   }
 }
 

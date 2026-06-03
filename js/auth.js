@@ -36,8 +36,9 @@ const userName   = document.getElementById("user-name");
 getRedirectResult(auth).then((result) => {
   if (result?.user) {
     console.log("[Auth] リダイレクトログイン成功:", result.user.email);
+    alert(`[デバッグ] ログイン成功！\nメール: ${result.user.email}\n\nこのアラートが見えたら教えてください`);
   } else {
-    console.log("[Auth] getRedirectResult: null（通常ロードまたはリダイレクト未実施）");
+    console.log("[Auth] getRedirectResult: null");
   }
 }).catch((error) => {
   console.error("[Auth] getRedirectResult エラー:", error.code, error.message);
@@ -53,9 +54,13 @@ getRedirectResult(auth).then((result) => {
  * リダイレクト方式を使用。ブラウザ・PWA・パスキーすべてに対応。
  */
 async function handleLogin() {
-  console.log("[Auth] ログインボタン押下");
-  alert("[デバッグ] ログインボタンが押されました。OKを押すとGoogleページに移動します。");
   const provider = new GoogleAuthProvider();
+  // 前回のリダイレクト保留状態をリセット（2回目以降の即時戻り問題の対策）
+  try {
+    Object.keys(sessionStorage)
+      .filter(key => key.includes("firebase"))
+      .forEach(key => sessionStorage.removeItem(key));
+  } catch (e) { /* ストレージアクセス不可の場合は無視 */ }
   try {
     await signInWithRedirect(auth, provider);
   } catch (error) {

@@ -4,9 +4,14 @@
  * ページ上部のログインボタンを管理します。
  * ログイン状態に応じてボタンとユーザー情報の表示を切り替えます。
  *
- * ── ホーム画面アプリ（standalone）での注意 ──────────────────
- * iPhoneのホーム画面から起動したとき（standalone モード）は
- * ポップアップが使えないため、リダイレクト方式に自動切替します。
+ * ── ログイン方式について ─────────────────────────────────────
+ * PWA スタンドアロンモード（ホーム画面アプリ）では signInWithRedirect を使います。
+ * スタンドアロンモードでは、ポップアップに使う SFSafariViewController が
+ * システムのパスキーダイアログ表示時に閉じられるため、パスキーでのログインに
+ * 失敗します。リダイレクト方式ならパスキーも含めて確実に動作します。
+ *
+ * 通常ブラウザでは signInWithPopup を優先し、ブロック・既存ポップアップ重複の
+ * 場合のみリダイレクト方式にフォールバックします。
  * ────────────────────────────────────────────────────────────
  *
  * このファイルは type="module" として読み込まれます。
@@ -28,33 +33,22 @@ const userInfo   = document.getElementById("user-info");
 const userAvatar = document.getElementById("user-avatar");
 const userName   = document.getElementById("user-name");
 
-// ============================================================
-// ホーム画面アプリ（standalone）かどうかの判定
-// ============================================================
-
-/**
- * ホーム画面から起動した「アプリ風モード」のときは true になる
- * iOS Safari の window.navigator.standalone と
- * Chrome等の matchMedia で判定する
- */
+// PWA スタンドアロンモードかどうかを判定
 const isStandalone =
   window.navigator.standalone === true ||
   window.matchMedia("(display-mode: standalone)").matches;
 
 // ============================================================
-// リダイレクトログインの結果を受け取る（standalone モード用）
+// 前回のリダイレクトログイン結果を受け取る
+// signInWithRedirect でのログインが成功していた場合に onAuthStateChanged が呼ばれる
 // ============================================================
-
-/**
- * standalone モードでリダイレクトログインした後、
- * アプリに戻ってきたときに結果を受け取る
- * 通常のポップアップログイン時は何も起きない
- */
-getRedirectResult(auth).catch((error) => {
-  // エラーがある場合だけ処理（結果なしの null は正常）
-  if (error && error.code) {
-    console.error("リダイレクトログイン結果エラー:", error);
-    alert("ログインに失敗しました。もう一度お試しください。");
+getRedirectResult(auth).then((result) => {
+  if (result?.user) {
+    console.log("[Auth] リダイレクトログイン成功");
+  }
+}).catch((error) => {
+  if (error?.code) {
+    console.warn("[Auth] リダイレクト結果エラー:", error.code);
   }
 });
 
@@ -65,30 +59,54 @@ getRedirectResult(auth).catch((error) => {
 /**
  * 「Googleでログイン」ボタンを押したときの処理
  *
- * ・通常のブラウザ  → ポップアップ画面でGoogleアカウントを選んで認証
- * ・ホーム画面アプリ → Googleのページにリダイレクトして認証（ポップアップ不可のため）
+ * スタンドアロンモード（PWA）: signInWithRedirect を使用
+ *   パスキー選択時に SFSafariViewController が閉じられる問題を回避するため。
+ *
+ * 通常ブラウザ: signInWithPopup を優先
+ *   ブロック・重複リクエストの場合は signInWithRedirect にフォールバック。
  */
 async function handleLogin() {
   const provider = new GoogleAuthProvider();
-  try {
-    if (isStandalone) {
-      // ホーム画面アプリはポップアップが動作しないのでリダイレクト方式を使う
+
+  if (isStandalone) {
+    // スタンドアロンモードはリダイレクト方式で確実にログイン
+    try {
       await signInWithRedirect(auth, provider);
-      // リダイレクト後は Google のページに移動し、戻ってきたら
-      // getRedirectResult と onAuthStateChanged が自動で処理する
-    } else {
-      // 通常ブラウザはポップアップ方式
-      await signInWithPopup(auth, provider);
+    } catch (error) {
+      console.error("[Auth] ログインエラー:", error);
+      alert("ログインに失敗しました。もう一度お試しください。");
     }
+    return;
+  }
+
+  // 通常ブラウザ: ポップアップ方式を試みる
+  try {
+    await signInWithPopup(auth, provider);
+    // ログイン成功 → onAuthStateChanged が自動で呼ばれて UI が更新される
+
   } catch (error) {
-    // ポップアップをキャンセルした場合は無視する
-    if (
-      error.code === "auth/popup-closed-by-user" ||
-      error.code === "auth/cancelled-popup-request"
-    ) {
+    // ユーザーが自分でポップアップを閉じた場合は無視する
+    if (error.code === "auth/popup-closed-by-user") {
       return;
     }
-    console.error("ログインエラー:", error);
+
+    // ポップアップがブロックされた、または前回のポップアップ操作が未完了の場合
+    // → リダイレクト方式にフォールバック（2回目以降ボタンが反応しない問題の対処）
+    if (
+      error.code === "auth/popup-blocked" ||
+      error.code === "auth/cancelled-popup-request"
+    ) {
+      console.warn("[Auth] ポップアップ不可のためリダイレクト方式に切り替えます:", error.code);
+      try {
+        await signInWithRedirect(auth, provider);
+      } catch (redirectError) {
+        console.error("[Auth] リダイレクトエラー:", redirectError);
+        alert("ログインに失敗しました。もう一度お試しください。");
+      }
+      return;
+    }
+
+    console.error("[Auth] ログインエラー:", error);
     alert("ログインに失敗しました。もう一度お試しください。");
   }
 }
@@ -105,7 +123,7 @@ async function handleLogout() {
   try {
     await signOut(auth);
   } catch (error) {
-    console.error("ログアウトエラー:", error);
+    console.error("[Auth] ログアウトエラー:", error);
     alert("ログアウトに失敗しました。");
   }
 }

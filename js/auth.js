@@ -31,10 +31,10 @@ const userName   = document.getElementById("user-name");
 // ============================================================
 
 async function processRedirectResult() {
-  // リダイレクトを実際に開始した場合のみ処理する
-  // このフラグがないと全ページ読み込みのたびに呼ばれ、エラーが繰り返される
+  // フラグはエラー表示の判定にのみ使用する
+  // getRedirectResult は毎回呼ぶことで Firebase の IndexedDB 内部状態をクリアする
+  // （呼ばないと「リダイレクト進行中」状態が残り、2回目以降の signInWithRedirect が無言でスキップされる）
   const redirectPending = localStorage.getItem("saunaAuthRedirectPending");
-  if (!redirectPending) return;
   localStorage.removeItem("saunaAuthRedirectPending");
 
   try {
@@ -44,7 +44,9 @@ async function processRedirectResult() {
     }
   } catch (error) {
     console.error("[Auth] getRedirectResult エラー:", error.code, error.message);
-    alert(`ログインに失敗しました。\nエラー: ${error.code || "不明"}\n\nもう一度お試しください。`);
+    if (redirectPending) {
+      alert(`ログインに失敗しました。\nエラー: ${error.code || "不明"}\n\nもう一度お試しください。`);
+    }
   }
 }
 
@@ -67,7 +69,7 @@ async function handleLogin() {
   } catch (error) {
     localStorage.removeItem("saunaAuthRedirectPending");
     console.error("[Auth] ログインエラー:", error.code, error.message);
-    alert("ログインに失敗しました。もう一度お試しください。");
+    alert(`ログインに失敗しました。\nエラー: ${error.code || "不明"}\n\nもう一度お試しください。`);
   }
 }
 

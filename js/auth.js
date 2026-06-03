@@ -6,6 +6,17 @@
  * このファイルは type="module" として読み込まれます。
  */
 import { auth } from "./firebase-config.js";
+
+// ホーム画面から起動したPWA（iOS standalone）でDynamic Island/ノッチとの重なりを防ぐ
+// CSSの env(safe-area-inset-top) が機能しない場合のJSフォールバック
+if (window.navigator.standalone === true) {
+  const el = document.documentElement;
+  el.style.paddingTop = "env(safe-area-inset-top)";
+  const safeTop = parseInt(getComputedStyle(el).paddingTop) || 0;
+  el.style.paddingTop = "";
+  const pad = Math.max(safeTop, 60); // Dynamic Island は約59px
+  document.body.style.paddingTop = pad + "px";
+}
 import {
   GoogleAuthProvider,
   signInWithPopup,

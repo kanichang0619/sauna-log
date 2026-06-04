@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>記録一覧 - サウナログ</title>
+  <title>施設一覧 - サウナログ</title>
   <link rel="stylesheet" href="style.css">
   <link rel="manifest" href="/sauna-log/manifest.json">
   <meta name="theme-color" content="#1a1a2e">
@@ -21,14 +21,13 @@
 
       <nav class="page-nav" aria-label="メインメニュー">
         <a href="index.html" class="nav-link">記録追加</a>
-        <a href="list.html" class="nav-link active" aria-current="page">記録一覧</a>
+        <a href="list.html" class="nav-link">記録一覧</a>
         <a href="calendar.html" class="nav-link">カレンダー</a>
         <a href="map.html" class="nav-link">地図</a>
         <a href="graph.html" class="nav-link">訪問数</a>
-        <a href="facilities.html" class="nav-link">施設一覧</a>
+        <a href="facilities.html" class="nav-link active" aria-current="page">施設一覧</a>
       </nav>
 
-      <!-- ログイン・ユーザー情報（auth.js が更新） -->
       <div class="auth-bar">
         <button type="button" id="login-btn" class="btn-login">
           <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -47,61 +46,91 @@
       </div>
 
       <div class="stats-bar" aria-live="polite">
-        <span class="stats-label">合計訪問回数</span>
-        <span id="total-visits" class="stats-value">0</span>
-        <span class="stats-unit">回</span>
+        <span class="stats-label">訪問済み施設数</span>
+        <span id="facility-count" class="stats-value">0</span>
+        <span class="stats-unit">施設</span>
       </div>
     </header>
 
     <section class="log-section">
-      <div class="log-section-header">
-        <h2>記録一覧</h2>
-        <div class="data-controls">
-          <button type="button" class="btn-secondary btn-small" id="export-btn">エクスポート</button>
-          <button type="button" class="btn-secondary btn-small" id="import-btn">インポート</button>
-          <input type="file" id="import-file" accept=".json" class="hidden">
-        </div>
-      </div>
+      <h2>施設一覧</h2>
 
-      <!-- 検索・ソートツールバー -->
       <div class="toolbar">
         <div class="form-group toolbar-item">
           <label for="search-input">検索</label>
-          <input type="search" id="search-input" placeholder="施設名・訪問日時・住所">
+          <input type="search" id="search-input" placeholder="施設名・住所">
         </div>
         <div class="toolbar-row">
           <div class="form-group toolbar-item">
             <label for="sort-by">並び替え</label>
             <select id="sort-by">
-              <option value="visitDateTime">訪問日時</option>
-              <option value="facility">施設名</option>
-              <option value="seiri">整い度</option>
+              <option value="name">施設名</option>
+              <option value="address">所在地</option>
+              <option value="visits">訪問回数</option>
+              <option value="lastVisit">最終訪問日</option>
             </select>
           </div>
           <div class="form-group toolbar-item">
             <label for="sort-order">順序</label>
             <select id="sort-order">
-              <option value="desc">降順（新しい・高い順）</option>
-              <option value="asc">昇順</option>
+              <option value="asc">昇順（A→Z・少ない順）</option>
+              <option value="desc">降順（Z→A・多い順）</option>
             </select>
           </div>
         </div>
       </div>
 
-      <!-- インポート結果などのメッセージ -->
-      <p id="list-message" class="save-message hidden" role="status"></p>
-
       <p id="empty-message" class="empty-message">
-        まだ記録がありません。<a href="index.html">記録追加ページ</a>から追加してください。
+        まだ施設が登録されていません。<a href="index.html">記録追加ページ</a>から記録を追加すると施設が登録されます。
       </p>
-      <p id="no-result-message" class="empty-message hidden">検索条件に一致する記録がありません。</p>
-      <ul id="log-list" class="log-list"></ul>
+      <p id="no-result-message" class="empty-message hidden">検索条件に一致する施設がありません。</p>
+      <ul id="facility-list" class="facility-list"></ul>
     </section>
+  </div>
+
+  <!-- 施設詳細・編集モーダル -->
+  <div id="facility-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-facility-name">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modal-facility-name" class="modal-title"></h3>
+        <button type="button" id="modal-close" class="btn-modal-close" aria-label="閉じる">✕</button>
+      </div>
+
+      <!-- 詳細表示モード -->
+      <div id="modal-detail-view">
+        <p id="detail-address" class="facility-detail-address"></p>
+        <div class="facility-detail-stats">
+          <span id="detail-visits" class="facility-detail-stat"></span>
+          <span id="detail-last-visit" class="facility-detail-stat hidden"></span>
+        </div>
+        <div class="form-actions" style="margin-top: 1rem;">
+          <button type="button" id="modal-edit-btn" class="btn-edit">施設情報を編集</button>
+        </div>
+      </div>
+
+      <!-- 編集モード -->
+      <div id="modal-edit-view" class="hidden">
+        <div class="form-group">
+          <label for="edit-facility-name">施設名</label>
+          <input type="text" id="edit-facility-name" placeholder="例：○○サウナ">
+        </div>
+        <div class="form-group">
+          <label for="edit-facility-address">住所</label>
+          <input type="text" id="edit-facility-address" placeholder="例：東京都渋谷区○○ 1-2-3">
+          <p class="hint">住所を変更すると地図の位置情報が再取得されます。</p>
+        </div>
+        <p id="edit-message" class="save-message hidden" role="status"></p>
+        <div class="form-actions">
+          <button type="button" id="save-facility-btn" class="btn-primary">保存</button>
+          <button type="button" id="cancel-edit-btn" class="btn-secondary">キャンセル</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script src="js/storage.js"></script>
   <script src="js/utils.js"></script>
-  <script src="js/list.js"></script>
+  <script src="js/facilities.js"></script>
   <script type="module" src="js/auth.js"></script>
   <script type="module" src="js/cloud-storage.js"></script>
   <script>

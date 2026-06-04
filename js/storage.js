@@ -143,6 +143,53 @@ function registerFacility(name, address, lat = null, lng = null) {
 }
 
 /**
+ * 施設の基本情報（名前・住所）を更新し、紐づく訪問記録にも反映する
+ * @param {string} facilityId
+ * @param {{ name?: string, address?: string }} updates
+ * @returns {Object|null} 更新後の施設オブジェクト。施設が存在しなければ null
+ */
+function updateFacility(facilityId, updates) {
+  const facilities = loadFacilities();
+  const facility = facilities[facilityId];
+  if (!facility) return null;
+
+  const newName = updates.name !== undefined ? String(updates.name).trim() : facility.name;
+  const newAddress = updates.address !== undefined ? String(updates.address).trim() : facility.address;
+
+  const nameChanged = newName !== facility.name;
+  const addressChanged = newAddress !== facility.address;
+
+  facility.name = newName;
+  facility.address = newAddress;
+  if (addressChanged) {
+    facility.lat = null;
+    facility.lng = null;
+  }
+  facilities[facilityId] = facility;
+  saveFacilities(facilities);
+
+  // 施設名が変わった場合は訪問記録の非正規化フィールドも更新
+  if (nameChanged) {
+    const logs = loadLogs();
+    let changed = false;
+    logs.forEach((log) => {
+      if (log.facilityId === facilityId) {
+        log.facility = newName;
+        changed = true;
+      }
+    });
+    if (changed) saveLogs(logs);
+  }
+
+  // 住所が変わった場合はバックグラウンドで再ジオコーディング
+  if (addressChanged && newAddress) {
+    geocodeFacilityInBackground(facilityId, newAddress);
+  }
+
+  return facility;
+}
+
+/**
  * 施設の緯度経度を更新（住所から位置検索したあと）
  * @param {string} facilityId
  * @param {number} lat
@@ -396,6 +443,7 @@ window.SaunaStorage = {
   findFacilityByName,
   getFacilityById,
   registerFacility,
+  updateFacility,
   updateFacilityLocation,
   geocodeAddress,
   geocodeFacilityInBackground,

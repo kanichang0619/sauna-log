@@ -1100,3 +1100,177 @@ select {
     width: 100%;
   }
 }
+
+/* ============================================
+   施設一覧ページ
+   ============================================ */
+
+.facility-list {
+  list-style: none;
+}
+
+.facility-item {
+  margin-bottom: 0.75rem;
+}
+
+.facility-item:last-child {
+  margin-bottom: 0;
+}
+
+.facility-card-btn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: #2d3748;
+  border: none;
+  border-left: 4px solid #ed8936;
+  border-radius: 10px;
+  padding: 1rem;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s;
+}
+
+.facility-card-btn:active {
+  background: #374151;
+}
+
+.facility-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+
+.facility-card-name {
+  font-size: 1.05rem;
+  font-weight: bold;
+  color: #f7fafc;
+  word-break: break-word;
+}
+
+.facility-visit-badge {
+  flex-shrink: 0;
+  background: rgba(237, 137, 54, 0.2);
+  border: 1px solid rgba(237, 137, 54, 0.5);
+  color: #ed8936;
+  font-size: 0.8rem;
+  font-weight: bold;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.facility-card-address {
+  font-size: 0.82rem;
+  color: #90cdf4;
+  margin-bottom: 0.2rem;
+  word-break: break-word;
+}
+
+.facility-no-address {
+  color: #718096;
+  font-style: italic;
+}
+
+.facility-card-last {
+  font-size: 0.78rem;
+  color: #718096;
+}
+
+/* ============================================
+   施設詳細・編集モーダル
+   ============================================ */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  z-index: 200;
+  display: flex;
+  align-items: flex-end;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.modal-content {
+  background: #1e2a3a;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 16px 16px 0 0;
+  padding: 1.5rem;
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-title {
+  font-size: 1.15rem;
+  color: #f7fafc;
+  word-break: break-word;
+  flex: 1;
+}
+
+.btn-modal-close {
+  flex-shrink: 0;
+  background: transparent;
+  border: none;
+  color: #a0aec0;
+  font-size: 1.1rem;
+  cursor: pointer;
+  min-height: 36px;
+  min-width: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn-modal-close:active {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.facility-detail-address {
+  font-size: 0.9rem;
+  color: #90cdf4;
+  margin-bottom: 0.5rem;
+  word-break: break-word;
+}
+
+.facility-detail-stats {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.facility-detail-stat {
+  font-size: 0.88rem;
+  color: #a0aec0;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 0.3rem 0.75rem;
+  border-radius: 6px;
+}
+
+@media (min-width: 481px) {
+  .modal-overlay {
+    align-items: center;
+    padding: 1rem;
+  }
+
+  .modal-content {
+    border-radius: 16px;
+    max-width: 480px;
+    margin: 0 auto;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+  }
+}

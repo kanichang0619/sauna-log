@@ -11,7 +11,7 @@
  * ─────────────────────────────────────────────────────────
  */
 
-const CACHE_VERSION = "v3";
+const CACHE_VERSION = "v4";
 const CACHE_NAME    = `sauna-log-${CACHE_VERSION}`;
 
 // ============================================================
@@ -24,6 +24,7 @@ const APP_SHELL = [
   "./calendar.html",
   "./map.html",
   "./graph.html",
+  "./facilities.html",
   "./style.css",
   "./app.js",
   "./manifest.json",
@@ -33,6 +34,7 @@ const APP_SHELL = [
   "./js/calendar.js",
   "./js/graph.js",
   "./js/map.js",
+  "./js/facilities.js",
   "./js/auth.js",
   "./js/firebase-config.js",
   "./js/cloud-storage.js",

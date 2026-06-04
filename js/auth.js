@@ -9,13 +9,12 @@ import { auth } from "./firebase-config.js";
 import {
   GoogleAuthProvider,
   signInWithPopup,
-  signInWithRedirect,
-  getRedirectResult,
   signOut,
   onAuthStateChanged,
 } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
 
 // iOS PWA（ホーム画面から起動）かどうか
+// スタンドアロンモードでは signInWithPopup が動作しないため別フローを使う
 const isStandalone =
   navigator.standalone === true ||
   window.matchMedia("(display-mode: standalone)").matches;
@@ -33,19 +32,24 @@ const userName   = document.getElementById("user-name");
 
 /**
  * 「Googleでログイン」ボタンを押したときの処理
- * PWA スタンドアロンモード（iOS ホーム画面起動）ではリダイレクト方式を使う。
+ *
+ * PWA スタンドアロンモード（iOS ホーム画面起動）では signInWithPopup / signInWithRedirect
+ * がどちらも機能しない。代わりに login.html を Safari で開き、そこでポップアップ認証を
+ * 行う。iOS PWA と Safari は同一オリジンの localStorage を共有するため、
+ * login.html 側での認証成功が onAuthStateChanged で PWA 側にも反映される。
+ *
  * 通常のブラウザではポップアップ方式を使う。
  */
 async function handleLogin() {
+  if (isStandalone) {
+    // login.html を Safari で開く（iOS では _blank が常に Safari で開く）
+    window.open("login.html", "_blank");
+    return;
+  }
+
   const provider = new GoogleAuthProvider();
   try {
-    if (isStandalone) {
-      await signInWithRedirect(auth, provider);
-      // リダイレクト後に Google の認証画面へ遷移し、戻ってきたら
-      // getRedirectResult → onAuthStateChanged が自動で UI を更新する
-    } else {
-      await signInWithPopup(auth, provider);
-    }
+    await signInWithPopup(auth, provider);
   } catch (error) {
     if (
       error.code === "auth/popup-closed-by-user" ||
@@ -118,23 +122,6 @@ onAuthStateChanged(auth, (user) => {
     // cloud-storage.js に「ログアウトした」ことを通知する
     window.dispatchEvent(new CustomEvent("sauna-auth-changed", { detail: { user: null } }));
   }
-});
-
-// ============================================================
-// リダイレクト認証の結果処理（PWA スタンドアロン復帰時）
-// ============================================================
-
-// signInWithRedirect でリダイレクトから戻ってきた場合、
-// getRedirectResult を呼んで結果を受け取る（成功時は onAuthStateChanged が UI を更新）
-getRedirectResult(auth).catch((error) => {
-  if (
-    error.code === "auth/no-auth-event" ||
-    error.code === "auth/null-user"
-  ) {
-    return; // リダイレクトなし or キャンセルは無視
-  }
-  console.error("リダイレクト認証エラー:", error);
-  alert("ログインに失敗しました。もう一度お試しください。");
 });
 
 // ============================================================

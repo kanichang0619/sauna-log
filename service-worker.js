@@ -11,7 +11,7 @@
  * ─────────────────────────────────────────────────────────
  */
 
-const CACHE_VERSION = "v4";
+const CACHE_VERSION = "v5";
 const CACHE_NAME    = `sauna-log-${CACHE_VERSION}`;
 
 // ============================================================
@@ -20,6 +20,7 @@ const CACHE_NAME    = `sauna-log-${CACHE_VERSION}`;
 const APP_SHELL = [
   "./",
   "./index.html",
+  "./login.html",
   "./list.html",
   "./calendar.html",
   "./map.html",

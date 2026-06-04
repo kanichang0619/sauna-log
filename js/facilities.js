@@ -1,13 +1,13 @@
 /**
  * facilities.js - 施設一覧ページ（facilities.html）専用
  *
- * 訪問記録に紐づく施設を一覧表示し、施設名・住所の編集を提供します。
- * 施設名を変更した場合は、紐づくすべての訪問記録にも反映されます。
+ * 訪問記録に紐づく施設を一覧表示し、施設情報の参照・編集を提供します。
+ * 編集した内容は紐づくすべての訪問記録にも反映されます。
  */
 (function () {
 "use strict";
 
-// ---- DOM 要素 ----
+// ---- DOM 要素（一覧） ----
 let facilityList;
 let emptyMessage;
 let noResultMessage;
@@ -16,18 +16,30 @@ let searchInput;
 let sortBySelect;
 let sortOrderSelect;
 
-// ---- モーダル ----
+// ---- モーダル：共通 ----
 let modal;
 let modalFacilityName;
 let modalClose;
+
+// ---- モーダル：詳細表示 ----
 let detailView;
 let detailAddress;
+let detailSaunaTemp;
+let detailWaterTemp;
+let detailLourou;
+let detailRestType;
 let detailVisits;
 let detailLastVisit;
 let modalEditBtn;
+
+// ---- モーダル：編集フォーム ----
 let editView;
 let editFacilityName;
 let editFacilityAddress;
+let editSaunaTemp;
+let editWaterTemp;
+let editLourou;
+let editRestType;
 let saveFacilityBtn;
 let cancelEditBtn;
 let editMessage;
@@ -75,6 +87,37 @@ function getFacilitiesWithStats() {
   }));
 }
 
+/**
+ * 施設の最新訪問記録から施設情報フィールドを取得する。
+ * saunaTemp / waterTemp / lourou / restType は訪問記録に紐づいているため、
+ * 最新の記録値を「施設の現在の設定」として扱う。
+ * @param {string} facilityId
+ * @returns {{ saunaTemp: number|null, waterTemp: number|null, lourou: string, restType: string }}
+ */
+function getLatestVisitInfo(facilityId) {
+  const logs = loadLogs()
+    .map(normalizeEntry)
+    .filter((log) => log.facilityId === facilityId)
+    .sort((a, b) => {
+      // visitDate 降順（新しい順）
+      if (a.visitDate > b.visitDate) return -1;
+      if (a.visitDate < b.visitDate) return 1;
+      return 0;
+    });
+
+  if (logs.length === 0) {
+    return { saunaTemp: null, waterTemp: null, lourou: "なし", restType: "外気浴" };
+  }
+
+  const latest = logs[0];
+  return {
+    saunaTemp: latest.saunaTemp ?? null,
+    waterTemp: latest.waterTemp ?? null,
+    lourou:    latest.lourou   || "なし",
+    restType:  latest.restType || "外気浴",
+  };
+}
+
 function filterFacilities(list, query) {
   if (!query.trim()) return list;
   const q = query.trim().toLowerCase();
@@ -113,7 +156,6 @@ function sortFacilities(list, by, order) {
 
 function renderFacilities() {
   const allFacilities = getFacilitiesWithStats();
-  // 訪問記録が1件以上ある施設のみ表示
   const visited = allFacilities.filter((f) => f.visitCount > 0);
 
   if (facilityCountEl) facilityCountEl.textContent = String(visited.length);
@@ -128,7 +170,7 @@ function renderFacilities() {
   emptyMessage.classList.add("hidden");
 
   const filtered = filterFacilities(visited, searchInput.value);
-  const sorted = sortFacilities(filtered, sortBySelect.value, sortOrderSelect.value);
+  const sorted   = sortFacilities(filtered, sortBySelect.value, sortOrderSelect.value);
 
   if (sorted.length === 0) {
     noResultMessage.classList.remove("hidden");
@@ -143,7 +185,6 @@ function renderFacilities() {
 
 function formatLastVisit(dateStr) {
   if (!dateStr) return "";
-  // "YYYY-MM-DD" → "YYYY年MM月DD日"
   const m = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);
   if (!m) return dateStr;
   return `${m[1]}年${parseInt(m[2], 10)}月${parseInt(m[3], 10)}日`;
@@ -201,18 +242,35 @@ function closeModal() {
 }
 
 function showDetailView(facility) {
+  const visitInfo = getLatestVisitInfo(facility.id);
+
   modalFacilityName.textContent = facility.name;
 
+  // 住所
   if (facility.address) {
-    detailAddress.textContent = `📍 ${facility.address}`;
+    detailAddress.textContent = facility.address;
     detailAddress.classList.remove("facility-no-address");
   } else {
-    detailAddress.textContent = "住所未登録";
+    detailAddress.textContent = "未登録";
     detailAddress.classList.add("facility-no-address");
   }
 
-  detailVisits.textContent = `訪問 ${facility.visitCount}回`;
+  // サウナ温度
+  detailSaunaTemp.textContent =
+    visitInfo.saunaTemp != null ? `${visitInfo.saunaTemp}℃` : "—";
 
+  // 水風呂温度
+  detailWaterTemp.textContent =
+    visitInfo.waterTemp != null ? `${visitInfo.waterTemp}℃` : "—";
+
+  // ロウリュ
+  detailLourou.textContent = visitInfo.lourou || "なし";
+
+  // 休憩タイプ
+  detailRestType.textContent = visitInfo.restType || "外気浴";
+
+  // 訪問回数・最終訪問日
+  detailVisits.textContent = `訪問 ${facility.visitCount}回`;
   if (facility.lastVisitDate) {
     detailLastVisit.textContent = `最終訪問: ${formatLastVisit(facility.lastVisitDate)}`;
     detailLastVisit.classList.remove("hidden");
@@ -226,8 +284,15 @@ function showDetailView(facility) {
 }
 
 function showEditView(facility) {
-  editFacilityName.value = facility.name;
+  const visitInfo = getLatestVisitInfo(facility.id);
+
+  editFacilityName.value    = facility.name;
   editFacilityAddress.value = facility.address || "";
+  editSaunaTemp.value       = visitInfo.saunaTemp != null ? String(visitInfo.saunaTemp) : "";
+  editWaterTemp.value       = visitInfo.waterTemp != null ? String(visitInfo.waterTemp) : "";
+  editLourou.value          = visitInfo.lourou || "なし";
+  editRestType.value        = visitInfo.restType || "外気浴";
+
   editMessage.classList.add("hidden");
   detailView.classList.add("hidden");
   editView.classList.remove("hidden");
@@ -237,21 +302,33 @@ function showEditView(facility) {
 function handleSave() {
   if (!currentFacilityId) return;
 
-  const newName = editFacilityName.value.trim();
+  const newName    = editFacilityName.value.trim();
   const newAddress = editFacilityAddress.value.trim();
+  const newSaunaTemp = editSaunaTemp.value !== "" ? Number(editSaunaTemp.value) : null;
+  const newWaterTemp = editWaterTemp.value !== "" ? Number(editWaterTemp.value) : null;
+  const newLourou  = editLourou.value;
+  const newRestType = editRestType.value;
 
   if (!newName) {
     showEditMessage("施設名は必須です。", true);
     return;
   }
 
-  const updated = updateFacility(currentFacilityId, { name: newName, address: newAddress });
+  const updates = {
+    name:     newName,
+    address:  newAddress,
+    lourou:   newLourou,
+    restType: newRestType,
+  };
+  if (newSaunaTemp != null) updates.saunaTemp = newSaunaTemp;
+  if (newWaterTemp != null) updates.waterTemp = newWaterTemp;
+
+  const updated = updateFacility(currentFacilityId, updates);
   if (!updated) {
     showEditMessage("施設情報の更新に失敗しました。", true);
     return;
   }
 
-  // 一覧を再描画してモーダルを閉じる
   renderFacilities();
   closeModal();
 
@@ -288,26 +365,39 @@ function initFacilities() {
 
   ({ escapeHtml } = window.SaunaUtils);
 
-  // DOM 参照
-  facilityList     = document.getElementById("facility-list");
-  emptyMessage     = document.getElementById("empty-message");
-  noResultMessage  = document.getElementById("no-result-message");
-  facilityCountEl  = document.getElementById("facility-count");
-  searchInput      = document.getElementById("search-input");
-  sortBySelect     = document.getElementById("sort-by");
-  sortOrderSelect  = document.getElementById("sort-order");
+  // 一覧 DOM
+  facilityList    = document.getElementById("facility-list");
+  emptyMessage    = document.getElementById("empty-message");
+  noResultMessage = document.getElementById("no-result-message");
+  facilityCountEl = document.getElementById("facility-count");
+  searchInput     = document.getElementById("search-input");
+  sortBySelect    = document.getElementById("sort-by");
+  sortOrderSelect = document.getElementById("sort-order");
 
-  modal              = document.getElementById("facility-modal");
-  modalFacilityName  = document.getElementById("modal-facility-name");
-  modalClose         = document.getElementById("modal-close");
-  detailView         = document.getElementById("modal-detail-view");
-  detailAddress      = document.getElementById("detail-address");
-  detailVisits       = document.getElementById("detail-visits");
-  detailLastVisit    = document.getElementById("detail-last-visit");
-  modalEditBtn       = document.getElementById("modal-edit-btn");
+  // モーダル共通
+  modal             = document.getElementById("facility-modal");
+  modalFacilityName = document.getElementById("modal-facility-name");
+  modalClose        = document.getElementById("modal-close");
+
+  // 詳細表示
+  detailView      = document.getElementById("modal-detail-view");
+  detailAddress   = document.getElementById("detail-address");
+  detailSaunaTemp = document.getElementById("detail-sauna-temp");
+  detailWaterTemp = document.getElementById("detail-water-temp");
+  detailLourou    = document.getElementById("detail-lourou");
+  detailRestType  = document.getElementById("detail-rest-type");
+  detailVisits    = document.getElementById("detail-visits");
+  detailLastVisit = document.getElementById("detail-last-visit");
+  modalEditBtn    = document.getElementById("modal-edit-btn");
+
+  // 編集フォーム
   editView           = document.getElementById("modal-edit-view");
   editFacilityName   = document.getElementById("edit-facility-name");
   editFacilityAddress = document.getElementById("edit-facility-address");
+  editSaunaTemp      = document.getElementById("edit-sauna-temp");
+  editWaterTemp      = document.getElementById("edit-water-temp");
+  editLourou         = document.getElementById("edit-lourou");
+  editRestType       = document.getElementById("edit-rest-type");
   saveFacilityBtn    = document.getElementById("save-facility-btn");
   cancelEditBtn      = document.getElementById("cancel-edit-btn");
   editMessage        = document.getElementById("edit-message");

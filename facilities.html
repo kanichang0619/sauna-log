@@ -98,7 +98,28 @@
 
       <!-- 詳細表示モード -->
       <div id="modal-detail-view">
-        <p id="detail-address" class="facility-detail-address"></p>
+        <dl class="facility-detail-list">
+          <div class="facility-detail-row">
+            <dt>住所</dt>
+            <dd id="detail-address"></dd>
+          </div>
+          <div class="facility-detail-row">
+            <dt>サウナ温度</dt>
+            <dd id="detail-sauna-temp"></dd>
+          </div>
+          <div class="facility-detail-row">
+            <dt>水風呂温度</dt>
+            <dd id="detail-water-temp"></dd>
+          </div>
+          <div class="facility-detail-row">
+            <dt>ロウリュ</dt>
+            <dd id="detail-lourou"></dd>
+          </div>
+          <div class="facility-detail-row">
+            <dt>休憩タイプ</dt>
+            <dd id="detail-rest-type"></dd>
+          </div>
+        </dl>
         <div class="facility-detail-stats">
           <span id="detail-visits" class="facility-detail-stat"></span>
           <span id="detail-last-visit" class="facility-detail-stat hidden"></span>
@@ -118,6 +139,32 @@
           <label for="edit-facility-address">住所</label>
           <input type="text" id="edit-facility-address" placeholder="例：東京都渋谷区○○ 1-2-3">
           <p class="hint">住所を変更すると地図の位置情報が再取得されます。</p>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="edit-sauna-temp">サウナ温度（℃）</label>
+            <input type="number" id="edit-sauna-temp" min="0" max="150">
+          </div>
+          <div class="form-group">
+            <label for="edit-water-temp">水風呂温度（℃）</label>
+            <input type="number" id="edit-water-temp" min="0" max="30">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="edit-lourou">ロウリュ</label>
+          <select id="edit-lourou">
+            <option value="なし">なし</option>
+            <option value="セルフ">セルフ</option>
+            <option value="オート">オート</option>
+            <option value="アウフグース">アウフグース</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="edit-rest-type">休憩タイプ</label>
+          <select id="edit-rest-type">
+            <option value="外気浴">外気浴</option>
+            <option value="内気浴">内気浴</option>
+          </select>
         </div>
         <p id="edit-message" class="save-message hidden" role="status"></p>
         <div class="form-actions">

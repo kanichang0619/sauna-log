@@ -168,15 +168,25 @@ function updateFacility(facilityId, updates) {
   facilities[facilityId] = facility;
   saveFacilities(facilities);
 
-  // 施設名が変わった場合は訪問記録の非正規化フィールドも更新
-  if (nameChanged) {
+  // 施設名・訪問記録フィールドが変わった場合は紐づくすべての訪問記録を更新
+  const hasLogUpdate =
+    nameChanged ||
+    updates.saunaTemp !== undefined ||
+    updates.waterTemp !== undefined ||
+    updates.lourou    !== undefined ||
+    updates.restType  !== undefined;
+
+  if (hasLogUpdate) {
     const logs = loadLogs();
     let changed = false;
     logs.forEach((log) => {
-      if (log.facilityId === facilityId) {
-        log.facility = newName;
-        changed = true;
-      }
+      if (log.facilityId !== facilityId) return;
+      if (nameChanged)                     log.facility  = newName;
+      if (updates.saunaTemp !== undefined) log.saunaTemp = Number(updates.saunaTemp);
+      if (updates.waterTemp !== undefined) log.waterTemp = Number(updates.waterTemp);
+      if (updates.lourou    !== undefined) log.lourou    = updates.lourou;
+      if (updates.restType  !== undefined) log.restType  = updates.restType;
+      changed = true;
     });
     if (changed) saveLogs(logs);
   }

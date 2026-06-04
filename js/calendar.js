@@ -326,10 +326,17 @@ function createDayRecordItem(entry) {
     </div>
   `;
 
-  // 編集ボタン：sessionStorage に ID を保存して記録追加ページへ移動
+  // 編集ボタン：モーダルで編集
   li.querySelector(".btn-edit").addEventListener("click", () => {
-    sessionStorage.setItem("sauna-edit-id", entry.id);
-    window.location.href = "index.html";
+    window.SaunaEntryModal.open(entry.id, () => {
+      renderCalendar(currentYear, currentMonth);
+      const remaining = buildVisitMap(currentYear, currentMonth)[selectedDateStr] || [];
+      if (remaining.length > 0) {
+        showDayRecords(selectedDateStr, remaining);
+      } else {
+        hideDayRecords();
+      }
+    });
   });
 
   // 削除ボタン

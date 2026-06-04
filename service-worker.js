@@ -32,6 +32,7 @@ const APP_SHELL = [
   "./js/utils.js",
   "./js/list.js",
   "./js/calendar.js",
+  "./js/entry-edit-modal.js",
   "./js/graph.js",
   "./js/map.js",
   "./js/facilities.js",

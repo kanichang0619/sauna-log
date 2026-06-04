@@ -133,10 +133,9 @@ function createLogItemElement(rawEntry) {
     </div>
   `;
 
-  // 「編集」ボタン：sessionStorage に ID を保存して記録追加ページへ移動
+  // 「編集」ボタン：モーダルで編集
   li.querySelector(".btn-edit").addEventListener("click", () => {
-    sessionStorage.setItem("sauna-edit-id", entry.id);
-    window.location.href = "index.html";
+    window.SaunaEntryModal.open(entry.id, renderLogs);
   });
 
   // 「削除」ボタン

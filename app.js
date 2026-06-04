@@ -30,6 +30,7 @@ let submitBtn;
 let cancelEditBtn;
 let facilitySuggestions;
 let saveMessage;
+let facilityLockMsg;
 
 // ---- SaunaStorage から使う関数 ----
 let loadLogs;
@@ -96,6 +97,75 @@ function updateFacilitySuggestions() {
     .join("");
 }
 
+// ============================================================
+// 施設情報フィールドのロック制御
+// ============================================================
+
+/**
+ * 施設情報フィールドを読み取り専用にする。
+ * @param {boolean} lockNameToo - 施設名フィールドもロックするか（編集モード用）
+ * @param {string} msg - ロックメッセージ
+ */
+function lockFacilityInfoFields(lockNameToo, msg) {
+  const inputs = [addressInput, document.getElementById("sauna-temp"), document.getElementById("water-temp")];
+  inputs.forEach((el) => {
+    if (!el) return;
+    el.readOnly = true;
+    el.classList.add("field-locked");
+  });
+
+  ["lourou", "restType"].forEach((id) => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    sel.disabled = true;
+    sel.classList.add("field-locked");
+    const existing = sel.parentNode.querySelector(`[data-lock-proxy="${id}"]`);
+    if (existing) {
+      existing.value = sel.value;
+    } else {
+      const proxy = document.createElement("input");
+      proxy.type = "hidden";
+      proxy.name = sel.name;
+      proxy.value = sel.value;
+      proxy.setAttribute("data-lock-proxy", id);
+      sel.parentNode.insertBefore(proxy, sel.nextSibling);
+    }
+  });
+
+  if (lockNameToo && facilityInput) {
+    facilityInput.readOnly = true;
+    facilityInput.classList.add("field-locked");
+  }
+
+  if (facilityLockMsg) {
+    facilityLockMsg.textContent = msg || "施設情報は「施設一覧」から変更できます。";
+    facilityLockMsg.classList.remove("hidden");
+  }
+}
+
+/** 施設情報フィールドのロックを解除する */
+function unlockFacilityInfoFields() {
+  const inputs = [facilityInput, addressInput, document.getElementById("sauna-temp"), document.getElementById("water-temp")];
+  inputs.forEach((el) => {
+    if (!el) return;
+    el.readOnly = false;
+    el.classList.remove("field-locked");
+  });
+
+  ["lourou", "restType"].forEach((id) => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    sel.disabled = false;
+    sel.classList.remove("field-locked");
+    const proxy = sel.parentNode.querySelector(`[data-lock-proxy="${id}"]`);
+    if (proxy) proxy.remove();
+  });
+
+  if (facilityLockMsg) {
+    facilityLockMsg.classList.add("hidden");
+  }
+}
+
 /** 施設名に応じて住所欄の案内文を更新 */
 function updateAddressHint() {
   const name     = facilityInput.value.trim();
@@ -125,7 +195,15 @@ function updateAddressHint() {
 /** 施設名が変わったときに住所ヒントと前回記録の自動入力を実行 */
 function handleFacilityInput() {
   updateAddressHint();
-  prefillFromLastVisit(facilityInput.value.trim());
+  const facilityName = facilityInput.value.trim();
+  const existing = findFacilityByName(facilityName);
+  if (existing) {
+    unlockFacilityInfoFields();
+    prefillFromLastVisit(facilityName);
+    lockFacilityInfoFields(false, "登録済み施設の施設情報は「施設一覧」から変更できます。");
+  } else {
+    unlockFacilityInfoFields();
+  }
 }
 
 // ============================================================
@@ -209,6 +287,7 @@ function setEditMode(editing) {
 /** 編集をキャンセルしてフォームを初期状態に戻す */
 function cancelEdit() {
   form.reset();
+  unlockFacilityInfoFields();
   setDefaultVisitDateTime();
   setDefaultRatingValues();
   setEditMode(false);
@@ -348,6 +427,7 @@ function fillFormFromEntry(entry) {
 
   if (facility) addressInput.value = facility.address || "";
   updateAddressHint();
+  lockFacilityInfoFields(true, "施設情報は「施設一覧」から変更できます。");
   setEditMode(true);
 }
 
@@ -492,6 +572,7 @@ function initApp() {
   cancelEditBtn      = document.getElementById("cancel-edit-btn");
   facilitySuggestions = document.getElementById("facility-suggestions");
   saveMessage        = document.getElementById("save-message");
+  facilityLockMsg    = document.getElementById("facility-lock-msg");
 
   if (!form || !submitBtn) {
     alert("画面の読み込みに失敗しました。ページを再読み込みしてください。");

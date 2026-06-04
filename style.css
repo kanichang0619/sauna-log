@@ -559,6 +559,21 @@ select {
   margin-top: 0.35rem;
 }
 
+.field-locked {
+  background: rgba(255, 255, 255, 0.04) !important;
+  color: #718096 !important;
+  cursor: not-allowed !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.facility-lock-msg {
+  margin-top: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(113, 128, 150, 0.12);
+  border-left: 3px solid #718096;
+  border-radius: 0 4px 4px 0;
+}
+
 .btn-primary {
   width: 100%;
   padding: 0.85rem;

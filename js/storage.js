@@ -389,6 +389,32 @@ function countVisitsByFacility() {
 }
 
 /**
+ * 施設ごとの最高整い度スコアを返す（上位 TOP_N 件、降順）
+ * @param {number} limit
+ * @returns {Array<{ name: string, score: number }>}
+ */
+function getTopSeiriByFacility(limit) {
+  const n = limit || 5;
+  const logs = loadLogs();
+  const maxSeiri = {};
+
+  logs.forEach((raw) => {
+    const entry = normalizeEntry(raw);
+    const name  = entry.facility;
+    if (!name) return;
+    const score = migrateSeiriScore(entry.seiri);
+    if (!(name in maxSeiri) || score > maxSeiri[name]) {
+      maxSeiri[name] = score;
+    }
+  });
+
+  return Object.entries(maxSeiri)
+    .map(([name, score]) => ({ name, score }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, n);
+}
+
+/**
  * 地図に表示できる施設一覧（緯度経度があるもの）
  * @returns {Array}
  */
@@ -491,6 +517,7 @@ window.SaunaStorage = {
   getVisitDateTime,
   normalizeEntry,
   countVisitsByFacility,
+  getTopSeiriByFacility,
   getMappableFacilities,
   getLogsByFacilityId,
   migrateLegacyLogs,

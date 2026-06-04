@@ -14,10 +14,10 @@
   <script>if(navigator.standalone)document.documentElement.style.setProperty('--pwa-top','60px')</script>
 </head>
 <body>
-  <div class="container container-wide">
+  <div class="container">
     <header>
       <h1>📊 ランキング</h1>
-      <p class="subtitle">施設ごとの訪問回数</p>
+      <p class="subtitle">上位5位ランキング</p>
 
       <nav class="page-nav" aria-label="メインメニュー">
         <a href="index.html" class="nav-link">記録追加</a>
@@ -46,19 +46,24 @@
       </div>
     </header>
 
-    <section class="chart-section">
-      <p id="chart-empty" class="empty-message hidden">
+    <section class="ranking-section">
+      <h2 class="ranking-title">🏆 施設ごとの訪問回数</h2>
+      <ol id="visit-ranking" class="ranking-list"></ol>
+      <p id="visit-ranking-empty" class="empty-message hidden">
         まだ記録がありません。<a href="index.html">記録ページ</a>から追加してください。
       </p>
-      <!-- Chart.js がこの canvas にグラフを描画 -->
-      <div class="chart-wrap">
-        <canvas id="visit-chart" aria-label="施設ごとの訪問回数グラフ"></canvas>
-      </div>
+    </section>
+
+    <section class="ranking-section">
+      <h2 class="ranking-title">✨ 整い度ランキング</h2>
+      <p class="ranking-subtitle">各施設の最高整い度スコア（100点満点）</p>
+      <ol id="seiri-ranking" class="ranking-list"></ol>
+      <p id="seiri-ranking-empty" class="empty-message hidden">
+        まだ記録がありません。<a href="index.html">記録ページ</a>から追加してください。
+      </p>
     </section>
   </div>
 
-  <!-- Chart.js（グラフ描画ライブラリ）を CDN から読み込み -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="js/storage.js"></script>
   <script src="js/graph.js"></script>
   <script type="module" src="js/auth.js"></script>

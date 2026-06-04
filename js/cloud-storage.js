@@ -222,6 +222,11 @@ async function deleteEntryFromCloud(uid, entryId) {
   await deleteDoc(ref);
 }
 
+async function syncFacilitiesToCloud(uid) {
+  const facilities = Object.values(window.SaunaStorage.loadFacilities());
+  await batchSet(facilities, "facilities", uid);
+}
+
 // ============================================================
 // グローバルに公開（app.js / list.js など非モジュールから呼べるようにする）
 // ============================================================
@@ -230,6 +235,7 @@ window.SaunaCloud = {
   syncFromCloud,
   saveEntryToCloud,
   saveFacilityToCloud,
+  syncFacilitiesToCloud,
   deleteEntryFromCloud,
 };
 

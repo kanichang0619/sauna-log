@@ -5,6 +5,8 @@
  * 施設の緯度経度は storage.js の施設マスタに保存されています。
  */
 
+(function () {
+
 const {
   loadFacilities,
   getMappableFacilities,
@@ -214,3 +216,5 @@ async function refreshMap() {
 }
 
 refreshMap();
+
+})();

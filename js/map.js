@@ -254,7 +254,7 @@ function renderPendingFacilities() {
       btn.disabled = true;
       btn.textContent = "取得中...";
 
-      const loc = await geocodeAddress(facility.address);
+      const loc = await geocodeAddress(facility.address, facility.name);
       if (loc) {
         updateFacilityLocation(facility.id, loc.lat, loc.lng);
         alert("位置情報を取得しました。地図を更新します。");
@@ -276,15 +276,33 @@ function renderPendingFacilities() {
 async function refreshMap() {
   initMap();
 
+  const statusEl = document.getElementById("map-geocoding-status");
   const all = Object.values(loadFacilities());
-  for (const f of all) {
-    if (f.address && (!f.lat || !f.lng)) {
-      const loc = await geocodeAddress(f.address);
-      if (loc) {
-        updateFacilityLocation(f.id, loc.lat, loc.lng);
-      }
+  const needsGeocoding = all.filter(
+    (f) => f.address && (!Number.isFinite(f.lat) || !Number.isFinite(f.lng))
+  );
+
+  if (needsGeocoding.length > 0 && statusEl) {
+    statusEl.textContent = `位置情報を取得中... (0/${needsGeocoding.length})`;
+    statusEl.classList.remove("hidden");
+  }
+
+  for (let i = 0; i < needsGeocoding.length; i++) {
+    const f = needsGeocoding[i];
+    if (i > 0) {
       await new Promise((r) => setTimeout(r, 1100));
     }
+    const loc = await geocodeAddress(f.address, f.name);
+    if (loc) {
+      updateFacilityLocation(f.id, loc.lat, loc.lng);
+    }
+    if (statusEl) {
+      statusEl.textContent = `位置情報を取得中... (${i + 1}/${needsGeocoding.length})`;
+    }
+  }
+
+  if (statusEl) {
+    statusEl.classList.add("hidden");
   }
 
   const mappable = getMappableFacilities();

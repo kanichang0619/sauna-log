@@ -240,7 +240,7 @@ function ensureFacility(facilityName, addressFromForm) {
 
   facility = registerFacility(facilityName, address);
   updateFacilitySuggestions();
-  geocodeFacilityInBackground(facility.id, address);
+  geocodeFacilityInBackground(facility.id, address, facilityName);
   return facility;
 }
 

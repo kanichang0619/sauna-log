@@ -193,7 +193,7 @@ function updateFacility(facilityId, updates) {
 
   // 住所が変わった場合はバックグラウンドで再ジオコーディング
   if (addressChanged && newAddress) {
-    geocodeFacilityInBackground(facilityId, newAddress);
+    geocodeFacilityInBackground(facilityId, newAddress, newName);
   }
 
   return facility;
@@ -216,21 +216,16 @@ function updateFacilityLocation(facilityId, lat, lng) {
 }
 
 /**
- * OpenStreetMap の Nominatim API で住所から緯度経度を取得
- * ※ インターネット接続が必要です
- * @param {string} address
+ * Nominatim への単一クエリ（User-Agent / 日本絞り込み付き）
+ * @param {string} query
  * @returns {Promise<{lat: number, lng: number}|null>}
  */
-async function geocodeAddress(address) {
-  const query = encodeURIComponent(address.trim());
-  if (!query) {
-    return null;
-  }
-
+async function nominatimSearch(query) {
   const url =
-    `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${query}`;
+    "https://nominatim.openstreetmap.org/search?format=json&limit=1" +
+    "&countrycodes=jp&accept-language=ja" +
+    `&q=${encodeURIComponent(query)}`;
 
-  // 応答が遅いときに保存処理全体が止まらないようタイムアウトを設定
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 8000);
 
@@ -239,15 +234,12 @@ async function geocodeAddress(address) {
       signal: controller.signal,
       headers: {
         Accept: "application/json",
+        "User-Agent": "SaunaLog/1.0",
       },
     });
-    if (!response.ok) {
-      return null;
-    }
+    if (!response.ok) return null;
     const results = await response.json();
-    if (!results.length) {
-      return null;
-    }
+    if (!results.length) return null;
     return {
       lat: parseFloat(results[0].lat),
       lng: parseFloat(results[0].lon),
@@ -260,12 +252,50 @@ async function geocodeAddress(address) {
 }
 
 /**
+ * OpenStreetMap の Nominatim API で住所から緯度経度を取得
+ * 失敗時は建物名を除いた短縮住所、次に施設名でリトライする
+ * ※ インターネット接続が必要です
+ * @param {string} address
+ * @param {string} [facilityName]
+ * @returns {Promise<{lat: number, lng: number}|null>}
+ */
+async function geocodeAddress(address, facilityName = "") {
+  const trimmed = address.trim();
+  if (!trimmed) return null;
+
+  const queries = [trimmed];
+
+  // 「数字 建物名」のパターンで末尾の建物名を除去してリトライ用クエリを生成
+  const simplified = trimmed.replace(/(\d+)\s+\S.*$/, "$1").trim();
+  if (simplified && simplified !== trimmed) {
+    queries.push(simplified);
+  }
+
+  // 住所で見つからない場合は施設名でフォールバック
+  const name = (facilityName || "").trim();
+  if (name && !queries.includes(name)) {
+    queries.push(name);
+  }
+
+  for (let i = 0; i < queries.length; i++) {
+    if (i > 0) {
+      await new Promise((r) => setTimeout(r, 1100));
+    }
+    const result = await nominatimSearch(queries[i]);
+    if (result) return result;
+  }
+
+  return null;
+}
+
+/**
  * 施設の位置情報をバックグラウンドで取得（記録の保存を待たせない）
  * @param {string} facilityId
  * @param {string} address
+ * @param {string} [facilityName]
  */
-function geocodeFacilityInBackground(facilityId, address) {
-  geocodeAddress(address).then((location) => {
+function geocodeFacilityInBackground(facilityId, address, facilityName = "") {
+  geocodeAddress(address, facilityName).then((location) => {
     if (location) {
       updateFacilityLocation(facilityId, location.lat, location.lng);
     }
